@@ -348,9 +348,48 @@
 <body>
     <div class="container">
         <div class="header">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <h1 style="margin: 0; font-size: 1.8em;">🎮 AI Pet Battle Arena</h1>
-                <span class="ink-badge">⛓️ Ink Blockchain</span>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <svg width="60" height="60" viewBox="0 0 200 200" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));">
+                    <defs>
+                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#ec4899;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#f472b6;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Outer circle -->
+                    <circle cx="100" cy="100" r="90" fill="none" stroke="url(#logoGradient)" stroke-width="8"/>
+                    <circle cx="100" cy="100" r="75" fill="none" stroke="#2d1b4e" stroke-width="12"/>
+                    
+                    <!-- Pixel pet (dragon-like) -->
+                    <g transform="translate(60, 60)">
+                        <!-- Body -->
+                        <rect x="10" y="30" width="10" height="10" fill="white"/>
+                        <rect x="20" y="30" width="10" height="10" fill="white"/>
+                        <rect x="30" y="30" width="10" height="10" fill="white"/>
+                        <rect x="40" y="30" width="10" height="10" fill="white"/>
+                        <rect x="50" y="30" width="10" height="10" fill="white"/>
+                        
+                        <!-- Head -->
+                        <rect x="0" y="20" width="10" height="10" fill="white"/>
+                        <rect x="10" y="20" width="10" height="10" fill="white"/>
+                        <rect x="20" y="20" width="10" height="10" fill="white"/>
+                        <rect x="10" y="10" width="10" height="10" fill="white"/>
+                        
+                        <!-- Tail -->
+                        <rect x="60" y="20" width="10" height="10" fill="white"/>
+                        <rect x="70" y="10" width="10" height="10" fill="white"/>
+                        <rect x="70" y="30" width="10" height="10" fill="white"/>
+                        
+                        <!-- Legs -->
+                        <rect x="20" y="40" width="10" height="10" fill="white"/>
+                        <rect x="40" y="40" width="10" height="10" fill="white"/>
+                    </g>
+                </svg>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <h1 style="margin: 0; font-size: 1.8em; line-height: 1;">🎮 AI Pet Battle Arena</h1>
+                    <span class="ink-badge" style="width: fit-content;">⛓️ Ink Blockchain</span>
+                </div>
             </div>
             <div class="wallet-section">
                 <button id="walletBtn" class="wallet-btn" onclick="toggleWallet()">
@@ -364,6 +403,84 @@
 
         <div id="startScreen" class="game-section active">
             <div class="start-screen">
+                <!-- Main Logo -->
+                <div style="margin: 40px 0; text-align: center;">
+                    <svg width="250" height="250" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 10px 30px rgba(102, 126, 234, 0.3));">
+                        <defs>
+                            <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#1e1b4b;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#4c1d95;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#ec4899;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#f472b6;stop-opacity:1" />
+                            </linearGradient>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        
+                        <!-- Background -->
+                        <rect width="400" height="400" fill="url(#bgGradient)" rx="200"/>
+                        
+                        <!-- Outer glow circle -->
+                        <circle cx="200" cy="200" r="160" fill="none" stroke="url(#ringGradient)" stroke-width="12" opacity="0.3" filter="url(#glow)"/>
+                        
+                        <!-- Main outer ring -->
+                        <circle cx="200" cy="200" r="150" fill="none" stroke="url(#ringGradient)" stroke-width="16"/>
+                        
+                        <!-- Inner dark ring -->
+                        <circle cx="200" cy="200" r="125" fill="none" stroke="#2d1b4e" stroke-width="20"/>
+                        
+                        <!-- Pixel pet -->
+                        <g transform="translate(100, 100)">
+                            <!-- Main body -->
+                            <rect x="20" y="60" width="20" height="20" fill="#ffffff"/>
+                            <rect x="40" y="60" width="20" height="20" fill="#ffffff"/>
+                            <rect x="60" y="60" width="20" height="20" fill="#ffffff"/>
+                            <rect x="80" y="60" width="20" height="20" fill="#ffffff"/>
+                            <rect x="100" y="60" width="20" height="20" fill="#ffffff"/>
+                            <rect x="120" y="60" width="20" height="20" fill="#ffffff"/>
+                            
+                            <!-- Head -->
+                            <rect x="0" y="40" width="20" height="20" fill="#ffffff"/>
+                            <rect x="20" y="40" width="20" height="20" fill="#ffffff"/>
+                            <rect x="40" y="40" width="20" height="20" fill="#ffffff"/>
+                            <rect x="20" y="20" width="20" height="20" fill="#ffffff"/>
+                            <rect x="40" y="20" width="20" height="20" fill="#ffffff"/>
+                            
+                            <!-- Horn/Ears -->
+                            <rect x="20" y="0" width="20" height="20" fill="#ffffff"/>
+                            <rect x="40" y="0" width="20" height="20" fill="#ffffff"/>
+                            
+                            <!-- Eyes -->
+                            <rect x="20" y="30" width="8" height="8" fill="#667eea"/>
+                            <rect x="40" y="30" width="8" height="8" fill="#667eea"/>
+                            
+                            <!-- Tail -->
+                            <rect x="140" y="40" width="20" height="20" fill="#ffffff"/>
+                            <rect x="160" y="20" width="20" height="20" fill="#ffffff"/>
+                            <rect x="160" y="60" width="20" height="20" fill="#ffffff"/>
+                            <rect x="180" y="10" width="20" height="20" fill="#ffffff"/>
+                            <rect x="180" y="70" width="20" height="20" fill="#ffffff"/>
+                            
+                            <!-- Legs -->
+                            <rect x="40" y="80" width="20" height="20" fill="#ffffff"/>
+                            <rect x="40" y="100" width="20" height="20" fill="#ffffff"/>
+                            <rect x="80" y="80" width="20" height="20" fill="#ffffff"/>
+                            <rect x="80" y="100" width="20" height="20" fill="#ffffff"/>
+                        </g>
+                    </svg>
+                    <h2 style="margin-top: 20px; font-size: 2.2em; background: linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #f472b6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                        AI Pet Battle Arena
+                    </h2>
+                </div>
+                
                 <div class="info-box">
                     <h3>🌐 About Ink Blockchain</h3>
                     <p>Ink is an Ethereum Layer 2 built for consumer crypto apps. This demo showcases NFT pets that can be minted and traded on the Ink network.</p>
@@ -378,7 +495,7 @@
                 </div>
                 
                 <p style="font-size: 1.2em; margin-bottom: 30px;">
-                    Welcome to AI Pet Battle Arena! Generate your unique pet using AI and battle against opponents.
+                    Welcome! Generate your unique pet using AI and battle against opponents.
                 </p>
                 <button class="btn" onclick="generateMyPet()">🎲 Generate My Pet</button>
             </div>
