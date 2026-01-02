@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Pet Battle Arena - Ink Blockchain</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .wallet-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wallet-btn {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .wallet-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .wallet-btn.connected {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .wallet-address {
+            font-size: 0.85em;
+            color: #666;
+            background: #f5f7fa;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .ink-badge {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-align: center;
+            width: 100%;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .game-section {
+            display: none;
+        }
+
+        .game-section.active {
+            display: block;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .wallet-notice {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pets-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .pet-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+            cursor: pointer;
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .pet-card:hover {
+            transform: scale(1.05);
+        }
+
+        .pet-card.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .nft-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #f39c12;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        .pet-emoji {
+            font-size: 5em;
+            margin: 10px 0;
+        }
+
+        .pet-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .pet-type {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .type-rock {
+            background: #b8860b;
+            color: white;
+        }
+
+        .type-paper {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .type-scissors {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .pet-stats {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .stat-bar {
+            margin: 8px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .stat-progress {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .battle-arena {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 30px;
+            align-items: center;
+            margin: 30px 0;
+        }
+
+        .vs-text {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .battle-result {
+            text-align: center;
+            padding: 30px;
+            background: #f5f7fa;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .result-text {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .win {
+            color: #27ae60;
+        }
+
+        .lose {
+            color: #e74c3c;
+        }
+
+        .draw {
+            color: #f39c12;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .button-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+
+        .network-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #27ae60;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h1 style="margin: 0; font-size: 1.8em;">🎮 AI Pet Battle Arena</h1>
+                <span class="ink-badge">⛓️ Ink Blockchain</span>
+            </div>
+            <div class="wallet-section">
+                <button id="walletBtn" class="wallet-btn" onclick="toggleWallet()">
+                    🔌 Connect Wallet
+                </button>
+                <span id="walletAddress" class="wallet-address" style="display: none;"></span>
+            </div>
+        </div>
+        
+        <p class="subtitle">Generate unique AI pets and battle in Rock-Paper-Scissors style combat on Ink!</p>
+
+        <div id="startScreen" class="game-section active">
+            <div class="start-screen">
+                <div class="info-box">
+                    <h3>🌐 About Ink Blockchain</h3>
+                    <p>Ink is an Ethereum Layer 2 built for consumer crypto apps. This demo showcases NFT pets that can be minted and traded on the Ink network.</p>
+                    <div class="network-info">
+                        <div class="status-dot"></div>
+                        <span style="font-size: 0.9em; color: #666;">Connected to Ink Testnet</span>
+                    </div>
+                </div>
+                
+                <div class="wallet-notice">
+                    ⚠️ <strong>Note:</strong> Connect your wallet to mint NFT pets on Ink blockchain. Demo mode available without wallet.
+                </div>
+                
+                <p style="font-size: 1.2em; margin-bottom: 30px;">
+                    Welcome to AI Pet Battle Arena! Generate your unique pet using AI and battle against opponents.
+                </p>
+                <button class="btn" onclick="generateMyPet()">🎲 Generate My Pet</button>
+            </div>
+        </div>
+
+        <div id="loadingScreen" class="game-section">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>AI is creating your unique pet...</p>
+            </div>
+        </div>
+
+        <div id="myPetScreen" class="game-section">
+            <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">Your Pet</h2>
+            <div id="myPetContainer" class="pets-container"></div>
+            <div class="button-group">
+                <button class="btn" onclick="findOpponent()">⚔️ Find Opponent</button>
+                <button class="btn" onclick="regeneratePet()">🔄 Generate New Pet</button>
+                <button id="mintBtn" class="btn" onclick="mintPetNFT()" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                    🎨 Mint as NFT
+                </button>
+            </div>
+        </div>
+
+        <div id="battleScreen" class="game-section">
+            <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">Battle Arena</h2>
+            <div class="battle-arena">
+                <div id="battleMyPet"></div>
+                <div class="vs-text">VS</div>
+                <div id="battleOpponentPet"></div>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="startBattle()">⚡ Battle!</button>
+            </div>
+        </div>
+
+        <div id="resultScreen" class="game-section">
+            <div class="battle-result">
+                <div id="resultMessage"></div>
+            </div>
+            <div class="button-group">
+                <button class="btn" onclick="playAgain()">🔄 Play Again</button>
+                <button class="btn" onclick="regeneratePet()">🎲 New Pet</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3modal/1.9.12/index.min.js"></script>
+    <script>
+        let myPet = null;
+        let opponentPet = null;
+        let walletConnected = false;
+        let userAddress = null;
+        let provider = null;
+        let signer = null;
+        let web3Modal = null;
+
+        // Initialize Web3Modal
+        function initWeb3Modal() {
+            const providerOptions = {
+                walletconnect: {
+                    package: window.WalletConnectProvider,
+                    options: {
+                        infuraId: "demo" // Use demo for testing
+                    }
+                }
+            };
+
+            web3Modal = new window.Web3Modal.default({
+                cacheProvider: false,
+                providerOptions,
+                disableInjectedProvider: false,
+            });
+        }
+
+        // Ink Testnet configuration
+        const INK_TESTNET = {
+            chainId: '0xBAAC2', // 763586 in hex
+            chainName: 'Ink Sepolia Testnet',
+            nativeCurrency: {
+                name: 'ETH',
+                symbol: 'ETH',
+                decimals: 18
+            },
+            rpcUrls: ['https://rpc-gel-sepolia.inkonchain.com'],
+            blockExplorerUrls: ['https://explorer-sepolia.inkonchain.com']
+        };
+
+        const petTypes = ['rock', 'paper', 'scissors'];
+        const petEmojis = {
+            rock: ['🗿', '🪨', '⛰️', '🦏', '🐘', '🦛'],
+            paper: ['📄', '🦅', '🦋', '🕊️', '🦜', '🐉'],
+            scissors: ['✂️', '🦂', '🦞', '🦀', '🕷️', '🦗']
+        };
+
+        async function toggleWallet() {
+            if (walletConnected) {
+                disconnectWallet();
+            } else {
+                await connectWallet();
+            }
+        }
+
+        async function connectWallet() {
+            // Check if we're in iframe (Claude artifacts)
+            if (window.self !== window.top) {
+                const useDemoMode = confirm(
+                    '⚠️ Running in iframe (Claude artifacts)\n\n' +
+                    'Wallet connections are limited in iframes.\n\n' +
+                    'Options:\n' +
+                    '✅ Click OK for DEMO MODE\n' +
+                    '🌐 Or save locally and open in browser for real wallet\n' +
+                    '📱 Supports: MetaMask, WalletConnect, Coinbase Wallet'
+                );
+                
+                if (useDemoMode) {
+                    simulateDemoWallet();
+                }
+                return;
+            }
+
+            // Try multiple wallet connection methods
+            if (typeof window.ethereum !== 'undefined') {
+                // MetaMask or injected wallet
+                await connectMetaMask();
+            } else if (web3Modal) {
+                // WalletConnect and other providers
+                await connectWeb3Modal();
+            } else {
+                // No wallet detected - offer demo mode
+                const useDemoMode = confirm(
+                    '⚠️ No Web3 wallet detected!\n\n' +
+                    'Please install:\n' +
+                    '• MetaMask (browser extension)\n' +
+                    '• Trust Wallet (mobile)\n' +
+                    '• Coinbase Wallet\n\n' +
+                    'Click OK to use DEMO MODE instead.'
+                );
+                
+                if (useDemoMode) {
+                    simulateDemoWallet();
+                }
+            }
+        }
+
+        async function connectMetaMask() {
+            try {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                
+                // Request account access
+                const accounts = await provider.send("eth_requestAccounts", []);
+                userAddress = accounts[0];
+
+                // Try to switch to Ink Testnet
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: INK_TESTNET.chainId }],
+                    });
+                } catch (switchError) {
+                    // Chain not added, let's add it
+                    if (switchError.code === 4902) {
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [INK_TESTNET],
+                            });
+                        } catch (addError) {
+                            console.error('Error adding Ink network:', addError);
+                            alert('Failed to add Ink network. You can continue in demo mode.');
+                        }
+                    }
+                }
+
+                signer = await provider.getSigner();
+                walletConnected = true;
+
+                // Update UI
+                document.getElementById('walletBtn').textContent = '✅ Connected';
+                document.getElementById('walletBtn').classList.add('connected');
+                document.getElementById('walletAddress').textContent = 
+                    `${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
+                document.getElementById('walletAddress').style.display = 'inline-block';
+
+                console.log('Connected to Ink Testnet:', userAddress);
+            } catch (error) {
+                console.error('Error connecting MetaMask:', error);
+                alert('Failed to connect wallet. You can continue in demo mode.');
+            }
+        }
+
+        async function connectWeb3Modal() {
+            try {
+                if (!web3Modal) {
+                    initWeb3Modal();
+                }
+
+                const instance = await web3Modal.connect();
+                provider = new ethers.BrowserProvider(instance);
+                
+                const accounts = await provider.listAccounts();
+                if (accounts.length > 0) {
+                    userAddress = accounts[0].address;
+                    signer = await provider.getSigner();
+                    walletConnected = true;
+
+                    // Update UI
+                    document.getElementById('walletBtn').textContent = '✅ Connected';
+                    document.getElementById('walletBtn').classList.add('connected');
+                    document.getElementById('walletAddress').textContent = 
+                        `${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
+                    document.getElementById('walletAddress').style.display = 'inline-block';
+
+                    console.log('Connected via Web3Modal:', userAddress);
+                }
+            } catch (error) {
+                console.error('Error connecting via Web3Modal:', error);
+                alert('Failed to connect wallet. You can continue in demo mode.');
+            }
+        }
+
+        function simulateDemoWallet() {
+            // Generate random demo address
+            const demoAddress = '0x' + Array.from({length: 40}, () => 
+                Math.floor(Math.random() * 16).toString(16)).join('');
+            
+            userAddress = demoAddress;
+            walletConnected = true;
+
+            // Update UI
+            document.getElementById('walletBtn').textContent = '✅ Connected (Demo)';
+            document.getElementById('walletBtn').classList.add('connected');
+            document.getElementById('walletAddress').textContent = 
+                `${demoAddress.substring(0, 6)}...${demoAddress.substring(38)} 🎭`;
+            document.getElementById('walletAddress').style.display = 'inline-block';
+
+            console.log('Demo wallet connected:', demoAddress);
+        }
+
+        function disconnectWallet() {
+            walletConnected = false;
+            userAddress = null;
+            provider = null;
+            signer = null;
+            
+            if (web3Modal) {
+                web3Modal.clearCachedProvider();
+            }
+
+            document.getElementById('walletBtn').textContent = '🔌 Connect Wallet';
+            document.getElementById('walletBtn').classList.remove('connected');
+            document.getElementById('walletAddress').style.display = 'none';
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            initWeb3Modal();
+        });
+
+        async function mintPetNFT() {
+            if (!walletConnected) {
+                alert('Please connect your wallet first to mint NFT!');
+                await connectWallet();
+                return;
+            }
+
+            if (!myPet) {
+                alert('No pet to mint!');
+                return;
+            }
+
+            // Simulate NFT minting (in production, this would interact with smart contract)
+            const confirmed = confirm(
+                `Mint "${myPet.name}" as NFT on Ink Blockchain?\n\n` +
+                `Type: ${myPet.type}\n` +
+                `Stats: ATK ${myPet.attack}, DEF ${myPet.defense}, SPD ${myPet.speed}\n\n` +
+                `This is a demo - no real transaction will occur.`
+            );
+
+            if (confirmed) {
+                alert('🎉 NFT Minted Successfully!\n\n' +
+                      `Pet "${myPet.name}" has been minted to your address.\n` +
+                      `Transaction hash: 0x${Math.random().toString(16).substr(2, 64)}\n\n` +
+                      `(Demo mode - Check Ink Explorer for real transactions)`);
+                
+                myPet.isNFT = true;
+                displayMyPet();
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.game-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        async function generateMyPet() {
+            showSection('loadingScreen');
+            myPet = await generatePetWithAI();
+            displayMyPet();
+            showSection('myPetScreen');
+        }
+
+        async function regeneratePet() {
+            showSection('loadingScreen');
+            myPet = await generatePetWithAI();
+            displayMyPet();
+            showSection('myPetScreen');
+        }
+
+        async function generatePetWithAI() {
+            const type = petTypes[Math.floor(Math.random() * petTypes.length)];
+            
+            try {
+                const response = await fetch("https://api.anthropic.com/v1/messages", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        model: "claude-sonnet-4-20250514",
+                        max_tokens: 1000,
+                        messages: [{
+                            role: "user",
+                            content: `Generate a creative name for a battle pet of type "${type}". The name should be fantasy-style, memorable, and related to the ${type} element. Respond with ONLY the name, nothing else. Maximum 2 words.`
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                const aiName = data.content[0].text.trim();
+
+                return {
+                    name: aiName,
+                    type: type,
+                    emoji: petEmojis[type][Math.floor(Math.random() * petEmojis[type].length)],
+                    attack: Math.floor(Math.random() * 30) + 70,
+                    defense: Math.floor(Math.random() * 30) + 70,
+                    speed: Math.floor(Math.random() * 30) + 70,
+                    isNFT: false
+                };
+            } catch (error) {
+                console.error('AI generation failed, using fallback:', error);
+                return generateFallbackPet(type);
+            }
+        }
+
+        function generateFallbackPet(type) {
+            const fallbackNames = {
+                rock: ['Boulder Beast', 'Stone Guardian', 'Rocky Titan'],
+                paper: ['Wind Dancer', 'Sky Phantom', 'Paper Dragon'],
+                scissors: ['Blade Master', 'Sharp Claw', 'Steel Striker']
+            };
+            
+            return {
+                name: fallbackNames[type][Math.floor(Math.random() * fallbackNames[type].length)],
+                type: type,
+                emoji: petEmojis[type][Math.floor(Math.random() * petEmojis[type].length)],
+                attack: Math.floor(Math.random() * 30) + 70,
+                defense: Math.floor(Math.random() * 30) + 70,
+                speed: Math.floor(Math.random() * 30) + 70,
+                isNFT: false
+            };
+        }
+
+        function createPetCard(pet, showStats = true) {
+            return `
+                <div class="pet-card">
+                    ${pet.isNFT ? '<div class="nft-badge">NFT</div>' : ''}
+                    <div class="pet-emoji">${pet.emoji}</div>
+                    <div class="pet-name">${pet.name}</div>
+                    <div class="pet-type type-${pet.type}">${pet.type.toUpperCase()}</div>
+                    ${showStats ? `
+                    <div class="pet-stats">
+                        <div class="stat-bar">
+                            <div class="stat-label">Attack: ${pet.attack}</div>
+                            <div class="stat-progress">
+                                <div class="stat-fill" style="width: ${pet.attack}%"></div>
+                            </div>
+                        </div>
+                        <div class="stat-bar">
+                            <div class="stat-label">Defense: ${pet.defense}</div>
+                            <div class="stat-progress">
+                                <div class="stat-fill" style="width: ${pet.defense}%"></div>
+                            </div>
+                        </div>
+                        <div class="stat-bar">
+                            <div class="stat-label">Speed: ${pet.speed}</div>
+                            <div class="stat-progress">
+                                <div class="stat-fill" style="width: ${pet.speed}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function displayMyPet() {
+            document.getElementById('myPetContainer').innerHTML = createPetCard(myPet);
+        }
+
+        async function findOpponent() {
+            showSection('loadingScreen');
+            opponentPet = await generatePetWithAI();
+            document.getElementById('battleMyPet').innerHTML = createPetCard(myPet);
+            document.getElementById('battleOpponentPet').innerHTML = createPetCard(opponentPet);
+            showSection('battleScreen');
+        }
+
+        function startBattle() {
+            const result = determineBattleResult(myPet.type, opponentPet.type);
+            displayBattleResult(result);
+            showSection('resultScreen');
+        }
+
+        function determineBattleResult(myType, opponentType) {
+            if (myType === opponentType) {
+                return 'draw';
+            }
+            
+            const winConditions = {
+                rock: 'scissors',
+                paper: 'rock',
+                scissors: 'paper'
+            };
+            
+            return winConditions[myType] === opponentType ? 'win' : 'lose';
+        }
+
+        function displayBattleResult(result) {
+            let message = '';
+            
+            if (result === 'win') {
+                message = `<div class="result-text win">🎉 VICTORY! 🎉</div>
+                          <p style="font-size: 1.2em;">Your ${myPet.name} defeated ${opponentPet.name}!</p>
+                          <p style="margin-top: 20px; color: #666;">${myPet.type} beats ${opponentPet.type}</p>`;
+            } else if (result === 'lose') {
+                message = `<div class="result-text lose">💔 DEFEAT 💔</div>
+                          <p style="font-size: 1.2em;">${opponentPet.name} defeated your ${myPet.name}!</p>
+                          <p style="margin-top: 20px; color: #666;">${opponentPet.type} beats ${myPet.type}</p>`;
+            } else {
+                message = `<div class="result-text draw">🤝 DRAW 🤝</div>
+                          <p style="font-size: 1.2em;">Both pets are equally matched!</p>
+                          <p style="margin-top: 20px; color: #666;">Both used ${myPet.type}</p>`;
+            }
+            
+            document.getElementById('resultMessage').innerHTML = message;
+        }
+
+        function playAgain() {
+            findOpponent();
+        }
+
+        // Listen for account changes
+        if (typeof window.ethereum !== 'undefined') {
+            window.ethereum.on('accountsChanged', function (accounts) {
+                if (accounts.length === 0) {
+                    disconnectWallet();
+                } else {
+                    userAddress = accounts[0];
+                    document.getElementById('walletAddress').textContent = 
+                        `${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
+                }
+            });
+
+            window.ethereum.on('chainChanged', function () {
+                window.location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
