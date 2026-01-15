@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pet Battle Arena - Ink Blockchain</title>
+    <title>AI Pet Mint - Ink Blockchain</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,19 +24,52 @@
         .container {
             background: white;
             border-radius: 20px;
-            padding: 30px;
-            max-width: 1200px;
+            padding: 40px;
+            max-width: 900px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             flex-wrap: wrap;
             gap: 15px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .title-section h1 {
+            font-size: 2em;
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #f472b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .ink-badge {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            display: inline-block;
         }
 
         .wallet-section {
@@ -50,10 +83,10 @@
             background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
             border-radius: 25px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 1em;
             font-weight: bold;
             transition: transform 0.2s;
         }
@@ -66,130 +99,138 @@
             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
         }
 
+        .wallet-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
         .wallet-address {
             font-size: 0.85em;
             color: #666;
             background: #f5f7fa;
-            padding: 8px 15px;
-            border-radius: 20px;
+            padding: 5px 12px;
+            border-radius: 15px;
         }
 
-        .balance-display {
+        .balance {
             font-size: 0.85em;
             color: #27ae60;
             background: #e8f8f5;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-
-        .ink-badge {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
-            padding: 5px 15px;
+            padding: 5px 12px;
             border-radius: 15px;
-            font-size: 0.85em;
             font-weight: bold;
-        }
-
-        h1 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-            text-align: center;
-            width: 100%;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1em;
         }
 
         .stats-bar {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            margin: 20px 0;
+            gap: 20px;
+            margin: 30px 0;
             flex-wrap: wrap;
         }
 
         .stat-item {
             text-align: center;
-            padding: 15px 25px;
+            padding: 20px 30px;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             border-radius: 15px;
+            min-width: 140px;
         }
 
         .stat-label {
             font-size: 0.9em;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .stat-value {
-            font-size: 1.8em;
+            font-size: 2.2em;
             font-weight: bold;
-            color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .game-section {
-            display: none;
-        }
-
-        .game-section.active {
-            display: block;
-        }
-
-        .start-screen {
+        .main-content {
             text-align: center;
-            padding: 40px 0;
+            margin: 40px 0;
         }
 
-        .wallet-notice {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 20px 0;
-            color: #856404;
+        .pet-display {
+            margin: 30px auto;
+            max-width: 300px;
         }
 
-        .price-info {
-            background: #d1ecf1;
-            border: 2px solid #17a2b8;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            color: #0c5460;
+        .pet-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        .price-item {
+        .pet-image-container {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #2d1b4e;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin: 10px 0;
-            padding: 10px;
-            background: white;
-            border-radius: 8px;
+            justify-content: center;
         }
+
+        .pet-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .pet-emoji {
+            font-size: 6em;
+        }
+
+        .pet-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .pet-type {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .type-rock { background: #b8860b; color: white; }
+        .type-paper { background: #4a90e2; color: white; }
+        .type-scissors { background: #e74c3c; color: white; }
+        .type-fire { background: #ff6b6b; color: white; }
+        .type-water { background: #4ecdc4; color: white; }
+        .type-grass { background: #95e1d3; color: white; }
 
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 15px 40px;
-            font-size: 1.2em;
+            padding: 18px 45px;
+            font-size: 1.3em;
             border-radius: 50px;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            margin: 10px;
+            margin: 15px;
+            font-weight: bold;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
         }
 
         .btn:disabled {
@@ -197,194 +238,77 @@
             cursor: not-allowed;
         }
 
-        .btn.danger {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        .btn-gm {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
         }
 
-        .pets-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
+        .btn-gm:hover:not(:disabled) {
+            box-shadow: 0 15px 30px rgba(243, 156, 18, 0.4);
         }
 
-        .pet-card {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.3s;
-            cursor: pointer;
-            border: 3px solid transparent;
-            position: relative;
-        }
-
-        .pet-card:hover {
-            transform: scale(1.05);
-        }
-
-        .pet-card.selected {
-            border-color: #667eea;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-        }
-
-        .nft-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #f39c12;
-            color: white;
-            padding: 3px 10px;
-            border-radius: 10px;
-            font-size: 0.75em;
+        .price-tag {
+            font-size: 1.1em;
+            color: #27ae60;
             font-weight: bold;
+            margin-top: 10px;
         }
 
-        .pet-image {
-            width: 200px;
-            height: 200px;
-            margin: 10px auto;
-            border-radius: 10px;
-            background: #2d1b4e;
+        .daily-quest {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe5b4 100%);
+            border-left: 5px solid #f39c12;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 15px;
+        }
+
+        .quest-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .pet-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .pet-emoji {
-            font-size: 5em;
-        }
-
-        .pet-name {
-            font-size: 1.5em;
+        .quest-title {
+            font-size: 1.4em;
             font-weight: bold;
             color: #333;
+        }
+
+        .quest-reward {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .quest-desc {
+            color: #666;
             margin: 10px 0;
         }
 
-        .pet-type {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
-            margin: 5px 0;
-        }
-
-        .type-rock {
-            background: #b8860b;
-            color: white;
-        }
-
-        .type-paper {
-            background: #4a90e2;
-            color: white;
-        }
-
-        .type-scissors {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .type-fire {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .type-water {
-            background: #4ecdc4;
-            color: white;
-        }
-
-        .type-grass {
-            background: #95e1d3;
-            color: white;
-        }
-
-        .pet-stats {
-            margin-top: 15px;
-            text-align: left;
-        }
-
-        .stat-bar {
-            margin: 8px 0;
-        }
-
-        .stat-progress {
-            background: #e0e0e0;
-            height: 8px;
+        .quest-timer {
+            background: white;
+            padding: 10px 20px;
             border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .stat-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s;
-        }
-
-        .battle-arena {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 30px;
-            align-items: center;
-            margin: 30px 0;
-        }
-
-        .vs-text {
-            font-size: 3em;
+            margin-top: 15px;
             font-weight: bold;
             color: #667eea;
-        }
-
-        .battle-result {
-            text-align: center;
-            padding: 30px;
-            background: #f5f7fa;
-            border-radius: 15px;
-            margin: 20px 0;
-        }
-
-        .result-text {
-            font-size: 2em;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-
-        .win {
-            color: #27ae60;
-        }
-
-        .lose {
-            color: #e74c3c;
-        }
-
-        .draw {
-            color: #f39c12;
         }
 
         .loading {
             text-align: center;
-            padding: 40px;
-            font-size: 1.2em;
-            color: #667eea;
+            padding: 60px;
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            margin: 0 auto 20px;
         }
 
         @keyframes spin {
@@ -392,17 +316,36 @@
             100% { transform: rotate(360deg); }
         }
 
-        .button-group {
-            text-align: center;
+        .loading-text {
+            font-size: 1.3em;
+            color: #667eea;
+        }
+
+        .tx-info {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            padding: 15px;
+            border-radius: 10px;
             margin-top: 20px;
+            word-break: break-all;
+        }
+
+        .tx-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .tx-link:hover {
+            text-decoration: underline;
         }
 
         .info-box {
             background: #e8f4f8;
             border-left: 4px solid #3498db;
-            padding: 15px;
+            padding: 20px;
             margin: 20px 0;
-            border-radius: 5px;
+            border-radius: 10px;
         }
 
         .info-box h3 {
@@ -410,267 +353,205 @@
             margin-bottom: 10px;
         }
 
-        .network-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
         }
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #27ae60;
-            animation: pulse 2s infinite;
+        .empty-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.5;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .empty-text {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
         }
 
-        .tx-hash {
-            font-size: 0.8em;
-            color: #3498db;
-            word-break: break-all;
-            margin-top: 10px;
-            padding: 10px;
-            background: #ecf0f1;
-            border-radius: 5px;
+        .countdown {
+            font-size: 1.5em;
+            color: #e74c3c;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <svg width="60" height="60" viewBox="0 0 200 200" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));">
-                    <defs>
-                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#ec4899;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#f472b6;stop-opacity:1" />
-                        </linearGradient>
-                    </defs>
-                    <circle cx="100" cy="100" r="90" fill="none" stroke="url(#logoGradient)" stroke-width="8"/>
-                    <circle cx="100" cy="100" r="75" fill="none" stroke="#2d1b4e" stroke-width="12"/>
-                    <g transform="translate(60, 60)">
-                        <rect x="10" y="30" width="10" height="10" fill="white"/>
-                        <rect x="20" y="30" width="10" height="10" fill="white"/>
-                        <rect x="30" y="30" width="10" height="10" fill="white"/>
-                        <rect x="40" y="30" width="10" height="10" fill="white"/>
-                        <rect x="50" y="30" width="10" height="10" fill="white"/>
-                        <rect x="0" y="20" width="10" height="10" fill="white"/>
-                        <rect x="10" y="20" width="10" height="10" fill="white"/>
-                        <rect x="20" y="20" width="10" height="10" fill="white"/>
-                        <rect x="10" y="10" width="10" height="10" fill="white"/>
-                        <rect x="60" y="20" width="10" height="10" fill="white"/>
-                        <rect x="70" y="10" width="10" height="10" fill="white"/>
-                        <rect x="70" y="30" width="10" height="10" fill="white"/>
-                        <rect x="20" y="40" width="10" height="10" fill="white"/>
-                        <rect x="40" y="40" width="10" height="10" fill="white"/>
-                    </g>
-                </svg>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <h1 style="margin: 0; font-size: 1.8em; line-height: 1;">🎮 AI Pet Battle Arena</h1>
-                    <span class="ink-badge" style="width: fit-content;">⛓️ Ink Blockchain</span>
+            <div class="logo-section">
+                <img src="https://i.postimg.cc/4N8v1F5Y/image.png" alt="AI Pet Arena Logo" class="logo-img">
+                <div class="title-section">
+                    <h1>AI Pet Arena</h1>
+                    <span class="ink-badge">⛓️ Ink Blockchain</span>
                 </div>
             </div>
             <div class="wallet-section">
                 <button id="walletBtn" class="wallet-btn" onclick="toggleWallet()">
                     🔌 Connect Wallet
                 </button>
-                <span id="walletAddress" class="wallet-address" style="display: none;"></span>
-                <span id="balanceDisplay" class="balance-display" style="display: none;"></span>
+                <div class="wallet-info" id="walletInfo" style="display: none;">
+                    <span id="walletAddress" class="wallet-address"></span>
+                    <span id="balance" class="balance"></span>
+                </div>
             </div>
         </div>
-        
-        <p class="subtitle">Generate unique AI pets and battle! Each mint costs 0.01 ETH, replace for 0.001 ETH</p>
 
         <div class="stats-bar">
             <div class="stat-item">
-                <div class="stat-label">Total Pet Types</div>
-                <div class="stat-value">6</div>
+                <div class="stat-label">🎨 Pets Minted</div>
+                <div class="stat-value" id="mintCount">0</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">Your Pets Minted</div>
-                <div class="stat-value" id="userPetCount">0</div>
+                <div class="stat-label">☀️ GM Streaks</div>
+                <div class="stat-value" id="gmCount">0</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">Battles Won</div>
-                <div class="stat-value" id="battlesWon">0</div>
+                <div class="stat-label">💰 Total Spent</div>
+                <div class="stat-value" id="totalSpent">0</div>
             </div>
         </div>
 
-        <div id="startScreen" class="game-section active">
-            <div class="start-screen">
-                <div style="margin: 40px 0; text-align: center;">
-                    <svg width="250" height="250" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 10px 30px rgba(102, 126, 234, 0.3));">
-                        <defs>
-                            <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#1e1b4b;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#4c1d95;stop-opacity:1" />
-                            </linearGradient>
-                            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:1" />
-                                <stop offset="50%" style="stop-color:#ec4899;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#f472b6;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                        <rect width="400" height="400" fill="url(#bgGradient)" rx="200"/>
-                        <circle cx="200" cy="200" r="150" fill="none" stroke="url(#ringGradient)" stroke-width="16"/>
-                        <circle cx="200" cy="200" r="125" fill="none" stroke="#2d1b4e" stroke-width="20"/>
-                        <g transform="translate(100, 100)">
-                            <rect x="20" y="60" width="20" height="20" fill="#ffffff"/>
-                            <rect x="40" y="60" width="20" height="20" fill="#ffffff"/>
-                            <rect x="60" y="60" width="20" height="20" fill="#ffffff"/>
-                            <rect x="80" y="60" width="20" height="20" fill="#ffffff"/>
-                            <rect x="100" y="60" width="20" height="20" fill="#ffffff"/>
-                            <rect x="120" y="60" width="20" height="20" fill="#ffffff"/>
-                            <rect x="0" y="40" width="20" height="20" fill="#ffffff"/>
-                            <rect x="20" y="40" width="20" height="20" fill="#ffffff"/>
-                            <rect x="40" y="40" width="20" height="20" fill="#ffffff"/>
-                            <rect x="20" y="20" width="20" height="20" fill="#ffffff"/>
-                            <rect x="40" y="20" width="20" height="20" fill="#ffffff"/>
-                            <rect x="20" y="0" width="20" height="20" fill="#ffffff"/>
-                            <rect x="40" y="0" width="20" height="20" fill="#ffffff"/>
-                            <rect x="140" y="40" width="20" height="20" fill="#ffffff"/>
-                            <rect x="160" y="20" width="20" height="20" fill="#ffffff"/>
-                            <rect x="160" y="60" width="20" height="20" fill="#ffffff"/>
-                            <rect x="180" y="10" width="20" height="20" fill="#ffffff"/>
-                            <rect x="180" y="70" width="20" height="20" fill="#ffffff"/>
-                            <rect x="40" y="80" width="20" height="20" fill="#ffffff"/>
-                            <rect x="40" y="100" width="20" height="20" fill="#ffffff"/>
-                            <rect x="80" y="80" width="20" height="20" fill="#ffffff"/>
-                            <rect x="80" y="100" width="20" height="20" fill="#ffffff"/>
-                        </g>
-                    </svg>
-                    <h2 style="margin-top: 20px; font-size: 2.2em; background: linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #f472b6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                        AI Pet Battle Arena
-                    </h2>
-                </div>
-
-                <div class="price-info">
-                    <h3 style="text-align: center; margin-bottom: 15px;">💰 Pricing</h3>
-                    <div class="price-item">
-                        <span><strong>🎲 Mint New Pet:</strong></span>
-                        <span style="color: #27ae60; font-weight: bold;">0.000005 ETH ($0.01)</span>
-                    </div>
-                    <div class="price-item">
-                        <span><strong>🔄 Replace Pet:</strong></span>
-                        <span style="color: #f39c12; font-weight: bold;">0.000005 ETH ($0.001)</span>
-                    </div>
-                    <p style="margin-top: 10px; font-size: 0.9em; text-align: center;">
-                        Replacing costs 10% of minting price!
-                    </p>
-                </div>
-                
-                <div class="info-box">
-                    <h3>🎨 6 Unique Pet Types</h3>
-                    <p><strong>Rock 🗿</strong> - Stone creatures, golems, earth elementals</p>
-                    <p><strong>Paper 📄</strong> - Flying beasts, wind spirits, dragons</p>
-                    <p><strong>Scissors ✂️</strong> - Sharp predators, blade warriors</p>
-                    <p><strong>Fire 🔥</strong> - Flame demons, phoenixes, lava monsters</p>
-                    <p><strong>Water 💧</strong> - Sea creatures, ice beasts, aquatic dragons</p>
-                    <p><strong>Grass 🌿</strong> - Nature spirits, forest guardians, plant monsters</p>
-                </div>
-
-                <div class="info-box">
-                    <h3>🌐 About Ink Blockchain</h3>
-                    <p>Ink is an Ethereum Layer 2 built for consumer crypto apps. Each pet is an NFT with AI-generated artwork!</p>
-                    <div class="network-info">
-                        <div class="status-dot"></div>
-                        <span style="font-size: 0.9em; color: #666;">Connected to Ink Sepolia Testnet</span>
-                    </div>
-                </div>
-                
-                <button class="btn" onclick="generateMyPet()">🎲 Mint Your First Pet (0.000005 ETH)</button>
+        <div id="mainContent" class="main-content">
+            <div id="emptyState" class="empty-state">
+                <div class="empty-icon">🎮</div>
+                <div class="empty-text">Mint your first AI-generated pet!</div>
+                <button class="btn" onclick="mintPet()">
+                    🎲 Mint Pet
+                    <div class="price-tag">0.00001 ETH</div>
+                </button>
             </div>
-        </div>
 
-        <div id="loadingScreen" class="game-section">
-            <div class="loading">
+            <div id="petDisplay" class="pet-display" style="display: none;">
+                <div class="pet-card">
+                    <div class="pet-image-container" id="petImageContainer">
+                        <div class="pet-emoji">🎮</div>
+                    </div>
+                    <div class="pet-name" id="petName">Your Pet</div>
+                    <div id="petType" class="pet-type">Rock</div>
+                </div>
+                <button class="btn" onclick="mintPet()">
+                    🔄 Mint New Pet
+                    <div class="price-tag">0.00001 ETH</div>
+                </button>
+            </div>
+
+            <div id="loadingState" class="loading" style="display: none;">
                 <div class="spinner"></div>
-                <p id="loadingText">AI is creating your unique pet...</p>
+                <div class="loading-text" id="loadingText">Generating your AI pet...</div>
+            </div>
+
+            <div id="txInfo" style="display: none;"></div>
+        </div>
+
+        <div class="daily-quest">
+            <div class="quest-header">
+                <div class="quest-title">☀️ Daily GM Quest</div>
+                <div class="quest-reward">+0.000005 ETH</div>
+            </div>
+            <div class="quest-desc">
+                Say GM to the community every day! Complete this quest to earn rewards.
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="gmButton" class="btn btn-gm" onclick="doGM()">
+                    ☀️ GM!
+                </button>
+            </div>
+            <div class="quest-timer" id="questTimer">
+                Next GM available in: <span id="countdown">00:00:00</span>
             </div>
         </div>
 
-        <div id="myPetScreen" class="game-section">
-            <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">Your Pet</h2>
-            <div id="myPetContainer" class="pets-container"></div>
-            <div id="txInfo" class="tx-hash" style="display: none;"></div>
-            <div class="button-group">
-                <button class="btn" onclick="findOpponent()">⚔️ Find Opponent</button>
-                <button class="btn danger" onclick="replacePet()">🔄 Replace Pet (0.0000005 ETH)</button>
-            </div>
+        <div class="info-box">
+            <h3>🎨 How It Works</h3>
+            <p><strong>1.</strong> Connect your Ink wallet</p>
+            <p><strong>2.</strong> Mint AI-generated pets for 0.00001 ETH each</p>
+            <p><strong>3.</strong> Say GM daily to earn 0.000005 ETH</p>
+            <p><strong>4.</strong> Collect unique pets and build your streak!</p>
         </div>
 
-        <div id="battleScreen" class="game-section">
-            <h2 style="text-align: center; color: #667eea; margin-bottom: 20px;">Battle Arena</h2>
-            <div class="battle-arena">
-                <div id="battleMyPet"></div>
-                <div class="vs-text">VS</div>
-                <div id="battleOpponentPet"></div>
-            </div>
-            <div class="button-group">
-                <button class="btn" onclick="startBattle()">⚡ Battle!</button>
-            </div>
-        </div>
-
-        <div id="resultScreen" class="game-section">
-            <div class="battle-result">
-                <div id="resultMessage"></div>
-            </div>
-            <div class="button-group">
-                <button class="btn" onclick="playAgain()">🔄 Play Again</button>
-                <button class="btn danger" onclick="replacePet()">🎲 Replace Pet (0.0000005 ETH)</button>
-            </div>
+        <div class="info-box">
+            <h3>🌐 About Ink Blockchain</h3>
+            <p>Ink is an Ethereum Layer 2 optimized for consumer apps. Ultra-low fees make it perfect for NFT minting and daily interactions!</p>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3modal/1.9.12/index.min.js"></script>
     <script>
-        let myPet = null;
-        let opponentPet = null;
         let walletConnected = false;
         let userAddress = null;
         let provider = null;
         let signer = null;
-        let web3Modal = null;
-        let userPetCount = 0;
-        let battlesWon = 0;
+        let currentPet = null;
+        
+        let mintCount = 0;
+        let gmCount = 0;
+        let totalSpent = 0;
+        let lastGMTime = 0;
 
-        const MINT_PRICE = "0.000005"; // ETH
-        const REPLACE_PRICE = "0.0000005"; // ETH (10% of mint)
+        const MINT_PRICE = "0.00001";
+        const GM_REWARD = "0.000005";
+        const GM_COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours
+        
+        const INK_TESTNET = {
+            chainId: '0xBAAC2',
+            chainName: 'Ink Sepolia Testnet',
+            nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+            rpcUrls: ['https://rpc-gel-sepolia.inkonchain.com'],
+            blockExplorerUrls: ['https://explorer-sepolia.inkonchain.com']
+        };
 
         const petTypes = ['rock', 'paper', 'scissors', 'fire', 'water', 'grass'];
         
-        const petTypeDescriptions = {
-            rock: 'stone golem with massive boulder armor',
-            paper: 'ethereal wind dragon with flowing paper wings',
-            scissors: 'sharp-clawed assassin beast with blade limbs',
-            fire: 'blazing phoenix demon wreathed in flames',
-            water: 'crystalline ice serpent with flowing water',
-            grass: 'ancient tree spirit covered in vines'
+        const petEmojis = {
+            rock: ['🗿', '🪨', '⛰️'],
+            paper: ['📄', '🦅', '🕊️'],
+            scissors: ['✂️', '🦂', '⚔️'],
+            fire: ['🔥', '🌋', '☄️'],
+            water: ['💧', '🌊', '❄️'],
+            grass: ['🌿', '🌱', '🍃']
         };
 
-        function initWeb3Modal() {
-            const providerOptions = {
-                walletconnect: {
-                    package: window.WalletConnectProvider,
-                    options: {
-                        infuraId: "demo"
-                    }
-                }
-            };
+        const petDescriptions = {
+            rock: 'ancient stone guardian',
+            paper: 'mystical wind spirit',
+            scissors: 'sharp blade warrior',
+            fire: 'blazing inferno beast',
+            water: 'crystalline ice serpent',
+            grass: 'forest nature spirit'
+        };
 
-            web3Modal = new window.Web3Modal.default({
-                cacheProvider: false,
-                providerOptions,
-                disableInjectedProvider: false,
-            });
+        // Load saved data
+        function loadData() {
+            mintCount = parseInt(localStorage.getItem('mintCount') || '0');
+            gmCount = parseInt(localStorage.getItem('gmCount') || '0');
+            totalSpent = parseFloat(localStorage.getItem('totalSpent') || '0');
+            lastGMTime = parseInt(localStorage.getItem('lastGMTime') || '0');
+            
+            const savedPet = localStorage.getItem('currentPet');
+            if (savedPet) {
+                currentPet = JSON.parse(savedPet);
+                showPet();
+            }
+            
+            updateStats();
+            updateGMButton();
+        }
+
+        function saveData() {
+            localStorage.setItem('mintCount', mintCount);
+            localStorage.setItem('gmCount', gmCount);
+            localStorage.setItem('totalSpent', totalSpent);
+            localStorage.setItem('lastGMTime', lastGMTime);
+            if (currentPet) {
+                localStorage.setItem('currentPet', JSON.stringify(currentPet));
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('mintCount').textContent = mintCount;
+            document.getElementById('gmCount').textContent = gmCount;
+            document.getElementById('totalSpent').textContent = totalSpent.toFixed(5);
         }
 
         async function toggleWallet() {
@@ -682,39 +563,11 @@
         }
 
         async function connectWallet() {
-            if (window.self !== window.top) {
-                const useDemoMode = confirm(
-                    '⚠️ Running in iframe (Claude artifacts)\n\n' +
-                    'Wallet connections are limited in iframes.\n\n' +
-                    'Options:\n' +
-                    '✅ Click OK for DEMO MODE\n' +
-                    '🌐 Or save locally and open in browser for real wallet'
-                );
-                
-                if (useDemoMode) {
-                    simulateDemoWallet();
-                }
+            if (typeof window.ethereum === 'undefined') {
+                alert('Please install MetaMask to connect your wallet!');
                 return;
             }
 
-            if (typeof window.ethereum !== 'undefined') {
-                await connectMetaMask();
-            } else if (web3Modal) {
-                await connectWeb3Modal();
-            } else {
-                const useDemoMode = confirm(
-                    '⚠️ No Web3 wallet detected!\n\n' +
-                    'Please install MetaMask or use mobile wallet.\n\n' +
-                    'Click OK to use DEMO MODE instead.'
-                );
-                
-                if (useDemoMode) {
-                    simulateDemoWallet();
-                }
-            }
-        }
-
-        async function connectMetaMask() {
             try {
                 provider = new ethers.BrowserProvider(window.ethereum);
                 const accounts = await provider.send("eth_requestAccounts", []);
@@ -723,78 +576,34 @@
                 try {
                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: '0xBAAC2' }],
+                        params: [{ chainId: INK_TESTNET.chainId }],
                     });
                 } catch (switchError) {
                     if (switchError.code === 4902) {
-                        try {
-                            await window.ethereum.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [{
-                                    chainId: '0xBAAC2',
-                                    chainName: 'Ink Sepolia Testnet',
-                                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-                                    rpcUrls: ['https://rpc-gel-sepolia.inkonchain.com'],
-                                    blockExplorerUrls: ['https://explorer-sepolia.inkonchain.com']
-                                }],
-                            });
-                        } catch (addError) {
-                            console.error('Error adding Ink network:', addError);
-                        }
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [INK_TESTNET],
+                        });
                     }
                 }
 
                 signer = await provider.getSigner();
                 walletConnected = true;
-                await updateWalletUI();
-            } catch (error) {
-                console.error('Error connecting MetaMask:', error);
-                alert('Failed to connect wallet.');
-            }
-        }
 
-        async function connectWeb3Modal() {
-            try {
-                if (!web3Modal) initWeb3Modal();
-                const instance = await web3Modal.connect();
-                provider = new ethers.BrowserProvider(instance);
-                const accounts = await provider.listAccounts();
-                if (accounts.length > 0) {
-                    userAddress = accounts[0].address;
-                    signer = await provider.getSigner();
-                    walletConnected = true;
-                    await updateWalletUI();
-                }
-            } catch (error) {
-                console.error('Error connecting via Web3Modal:', error);
-            }
-        }
-
-        function simulateDemoWallet() {
-            const demoAddress = '0x' + Array.from({length: 40}, () => 
-                Math.floor(Math.random() * 16).toString(16)).join('');
-            
-            userAddress = demoAddress;
-            walletConnected = true;
-            updateWalletUI();
-        }
-
-        async function updateWalletUI() {
-            document.getElementById('walletBtn').textContent = '✅ Connected';
-            document.getElementById('walletBtn').classList.add('connected');
-            document.getElementById('walletAddress').textContent = 
-                `${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
-            document.getElementById('walletAddress').style.display = 'inline-block';
-
-            if (provider && !userAddress.startsWith('0x0')) {
+                document.getElementById('walletBtn').textContent = '✅ Connected';
+                document.getElementById('walletBtn').classList.add('connected');
+                document.getElementById('walletAddress').textContent = 
+                    `${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
+                
                 const balance = await provider.getBalance(userAddress);
-                const ethBalance = ethers.formatEther(balance);
-                document.getElementById('balanceDisplay').textContent = 
-                    `💰 ${parseFloat(ethBalance).toFixed(4)} ETH`;
-                document.getElementById('balanceDisplay').style.display = 'inline-block';
-            } else {
-                document.getElementById('balanceDisplay').textContent = '💰 Demo Mode';
-                document.getElementById('balanceDisplay').style.display = 'inline-block';
+                document.getElementById('balance').textContent = 
+                    `💰 ${parseFloat(ethers.formatEther(balance)).toFixed(4)} ETH`;
+                
+                document.getElementById('walletInfo').style.display = 'flex';
+
+            } catch (error) {
+                console.error('Connection error:', error);
+                alert('Failed to connect wallet: ' + error.message);
             }
         }
 
@@ -803,122 +612,56 @@
             userAddress = null;
             provider = null;
             signer = null;
-            
-            if (web3Modal) {
-                web3Modal.clearCachedProvider();
-            }
 
             document.getElementById('walletBtn').textContent = '🔌 Connect Wallet';
             document.getElementById('walletBtn').classList.remove('connected');
-            document.getElementById('walletAddress').style.display = 'none';
-            document.getElementById('balanceDisplay').style.display = 'none';
+            document.getElementById('walletInfo').style.display = 'none';
         }
 
-        function showSection(sectionId) {
-            document.querySelectorAll('.game-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById(sectionId).classList.add('active');
-        }
-
-        async function generateMyPet() {
+        async function mintPet() {
             if (!walletConnected) {
-                const connect = confirm('Connect wallet to mint NFT pet for 0.01 ETH?\n\nClick OK to connect, Cancel for demo mode.');
-                if (connect) {
-                    await connectWallet();
-                    if (!walletConnected) return;
-                }
-            }
-
-            if (walletConnected && signer) {
-                const confirmed = confirm(
-                    `Mint new pet NFT?\n\n` +
-                    `Cost: ${MINT_PRICE} ETH\n` +
-                    `This will be recorded on Ink blockchain.`
-                );
-                
-                if (!confirmed) return;
-
-                document.getElementById('loadingText').textContent = 'Processing payment...';
-                showSection('loadingScreen');
-
-                try {
-                    const tx = await signer.sendTransaction({
-                        to: '0x0000000000000000000000000000000000000001',
-                        value: ethers.parseEther(MINT_PRICE)
-                    });
-                    
-                    document.getElementById('loadingText').textContent = 'Transaction sent! Generating pet...';
-                    await tx.wait();
-                    
-                    displayTxInfo(tx.hash, 'Minted');
-                    userPetCount++;
-                    document.getElementById('userPetCount').textContent = userPetCount;
-                } catch (error) {
-                    alert('Transaction failed: ' + error.message);
-                    showSection('startScreen');
-                    return;
-                }
-            }
-
-            document.getElementById('loadingText').textContent = 'AI is creating your unique pet...';
-            showSection('loadingScreen');
-            myPet = await generatePetWithAI();
-            displayMyPet();
-            showSection('myPetScreen');
-        }
-
-        async function replacePet() {
-            if (!walletConnected) {
+                alert('Please connect your wallet first!');
                 await connectWallet();
-                if (!walletConnected) return;
+                return;
             }
 
-            if (walletConnected && signer) {
-                const confirmed = confirm(
-                    `Replace your current pet?\n\n` +
-                    `Cost: ${REPLACE_PRICE} ETH (10% discount)\n` +
-                    `Your current pet will be burned.`
-                );
+            const confirmed = confirm(
+                `Mint a new AI-generated pet?\n\n` +
+                `Cost: ${MINT_PRICE} ETH\n` +
+                `Network: Ink Sepolia Testnet`
+            );
+            
+            if (!confirmed) return;
+
+            showLoading('Processing transaction...');
+
+            try {
+                const tx = await signer.sendTransaction({
+                    to: userAddress,
+                    value: ethers.parseEther(MINT_PRICE)
+                });
+
+                showLoading('Transaction sent! Generating your pet...');
+                await tx.wait();
+
+                mintCount++;
+                totalSpent += parseFloat(MINT_PRICE);
+                saveData();
+                updateStats();
+
+                showTxInfo(tx.hash, 'Pet Minted');
                 
-                if (!confirmed) return;
-
-                showSection('loadingScreen');
-                document.getElementById('loadingText').textContent = 'Processing replacement...';
-
-                try {
-                    const tx = await signer.sendTransaction({
-                        to: '0x0000000000000000000000000000000000000001',
-                        value: ethers.parseEther(REPLACE_PRICE)
-                    });
-                    
-                    document.getElementById('loadingText').textContent = 'Burning old pet and generating new one...';
-                    await tx.wait();
-                    
-                    displayTxInfo(tx.hash, 'Replaced');
-                } catch (error) {
-                    alert('Transaction failed: ' + error.message);
-                    showSection('myPetScreen');
-                    return;
-                }
+                showLoading('AI is creating your unique pet...');
+                await generatePet();
+                
+            } catch (error) {
+                console.error('Mint error:', error);
+                alert('Transaction failed: ' + error.message);
+                hideLoading();
             }
-
-            document.getElementById('loadingText').textContent = 'AI is creating your new pet...';
-            myPet = await generatePetWithAI();
-            displayMyPet();
-            showSection('myPetScreen');
         }
 
-        function displayTxInfo(hash, action) {
-            const txInfo = document.getElementById('txInfo');
-            txInfo.innerHTML = `
-                ✅ ${action} successfully!<br>
-                TX: <a href="https://explorer-sepolia.inkonchain.com/tx/${hash}" target="_blank" style="color: #3498db;">${hash.substring(0, 10)}...${hash.substring(56)}</a>
-            `;
-            txInfo.style.display = 'block';
-        }
-
-        async function generatePetWithAI() {
+        async function generatePet() {
             const type = petTypes[Math.floor(Math.random() * petTypes.length)];
             
             try {
@@ -932,7 +675,7 @@
                         max_tokens: 1000,
                         messages: [{
                             role: "user",
-                            content: `Generate a creative fantasy name for a ${type}-type battle pet. The pet is described as: "${petTypeDescriptions[type]}". Respond with ONLY the name, nothing else. Maximum 2 words.`
+                            content: `Generate a creative fantasy name for a ${type}-type creature. It's described as: "${petDescriptions[type]}". Respond with ONLY the name, maximum 2 words.`
                         }]
                     })
                 });
@@ -940,177 +683,169 @@
                 const data = await response.json();
                 const aiName = data.content[0].text.trim();
 
-                const imageUrl = await generatePetImage(type, aiName);
-
-                return {
+                currentPet = {
                     name: aiName,
                     type: type,
-                    imageUrl: imageUrl,
-                    attack: Math.floor(Math.random() * 30) + 70,
-                    defense: Math.floor(Math.random() * 30) + 70,
-                    speed: Math.floor(Math.random() * 30) + 70,
-                    isNFT: walletConnected
+                    emoji: petEmojis[type][Math.floor(Math.random() * petEmojis[type].length)]
                 };
+
             } catch (error) {
                 console.error('AI generation failed:', error);
-                return generateFallbackPet(type);
+                const fallbackNames = {
+                    rock: ['Boulder', 'Granite'],
+                    paper: ['Zephyr', 'Sky'],
+                    scissors: ['Blade', 'Sharp'],
+                    fire: ['Inferno', 'Blaze'],
+                    water: ['Tide', 'Frost'],
+                    grass: ['Leaf', 'Vine']
+                };
+                
+                currentPet = {
+                    name: fallbackNames[type][Math.floor(Math.random() * 2)],
+                    type: type,
+                    emoji: petEmojis[type][0]
+                };
             }
+
+            saveData();
+            showPet();
+            hideLoading();
         }
 
-        async function generatePetImage(type, name) {
-            const svgIcons = {
-                rock: '🗿',
-                paper: '📄',
-                scissors: '✂️',
-                fire: '🔥',
-                water: '💧',
-                grass: '🌿'
-            };
+        function showPet() {
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('petDisplay').style.display = 'block';
             
-            return `data:image/svg+xml,${encodeURIComponent(`
-                <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="200" height="200" fill="#2d1b4e"/>
-                    <text x="100" y="120" font-size="80" text-anchor="middle" fill="white">${svgIcons[type]}</text>
-                    <text x="100" y="180" font-size="16" text-anchor="middle" fill="white" font-family="Arial">${name}</text>
-                </svg>
-            `)}`;
+            document.getElementById('petImageContainer').innerHTML = 
+                `<div class="pet-emoji">${currentPet.emoji}</div>`;
+            document.getElementById('petName').textContent = currentPet.name;
+            document.getElementById('petType').className = `pet-type type-${currentPet.type}`;
+            document.getElementById('petType').textContent = currentPet.type.toUpperCase();
         }
 
-        function generateFallbackPet(type) {
-            const fallbackNames = {
-                rock: ['Boulder Beast', 'Stone Guardian', 'Rocky Titan'],
-                paper: ['Wind Dancer', 'Sky Phantom', 'Paper Dragon'],
-                scissors: ['Blade Master', 'Sharp Claw', 'Steel Striker'],
-                fire: ['Flame Lord', 'Inferno Beast', 'Phoenix King'],
-                water: ['Tidal Wave', 'Frost Dragon', 'Ocean Spirit'],
-                grass: ['Forest Guard', 'Nature\'s Wrath', 'Vine Titan']
-            };
-            
-            const name = fallbackNames[type][Math.floor(Math.random() * fallbackNames[type].length)];
-            
-            return {
-                name: name,
-                type: type,
-                imageUrl: generatePetImage(type, name),
-                attack: Math.floor(Math.random() * 30) + 70,
-                defense: Math.floor(Math.random() * 30) + 70,
-                speed: Math.floor(Math.random() * 30) + 70,
-                isNFT: false
-            };
+        function showLoading(text) {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('petDisplay').style.display = 'none';
+            document.getElementById('loadingState').style.display = 'block';
         }
 
-        function createPetCard(pet, showStats = true) {
-            return `
-                <div class="pet-card">
-                    ${pet.isNFT ? '<div class="nft-badge">NFT</div>' : ''}
-                    <div class="pet-image">
-                        <img src="${pet.imageUrl}" alt="${pet.name}">
-                    </div>
-                    <div class="pet-name">${pet.name}</div>
-                    <div class="pet-type type-${pet.type}">${pet.type.toUpperCase()}</div>
-                    ${showStats ? `
-                    <div class="pet-stats">
-                        <div class="stat-bar">
-                            <div class="stat-label">Attack: ${pet.attack}</div>
-                            <div class="stat-progress">
-                                <div class="stat-fill" style="width: ${pet.attack}%"></div>
-                            </div>
-                        </div>
-                        <div class="stat-bar">
-                            <div class="stat-label">Defense: ${pet.defense}</div>
-                            <div class="stat-progress">
-                                <div class="stat-fill" style="width: ${pet.defense}%"></div>
-                            </div>
-                        </div>
-                        <div class="stat-bar">
-                            <div class="stat-label">Speed: ${pet.speed}</div>
-                            <div class="stat-progress">
-                                <div class="stat-fill" style="width: ${pet.speed}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                    ` : ''}
+        function hideLoading() {
+            document.getElementById('loadingState').style.display = 'none';
+        }
+
+        function showTxInfo(hash, action) {
+            const txInfo = document.getElementById('txInfo');
+            txInfo.innerHTML = `
+                <div class="tx-info">
+                    ✅ <strong>${action} Successfully!</strong><br>
+                    TX: <a href="https://explorer-sepolia.inkonchain.com/tx/${hash}" target="_blank" class="tx-link">
+                        ${hash.substring(0, 10)}...${hash.substring(56)}
+                    </a>
                 </div>
             `;
+            txInfo.style.display = 'block';
         }
 
-        function displayMyPet() {
-            document.getElementById('myPetContainer').innerHTML = createPetCard(myPet);
-        }
-
-        async function findOpponent() {
-            showSection('loadingScreen');
-            document.getElementById('loadingText').textContent = 'Finding opponent...';
-            opponentPet = await generatePetWithAI();
-            document.getElementById('battleMyPet').innerHTML = createPetCard(myPet);
-            document.getElementById('battleOpponentPet').innerHTML = createPetCard(opponentPet);
-            showSection('battleScreen');
-        }
-
-        function startBattle() {
-            const result = determineBattleResult(myPet.type, opponentPet.type);
-            if (result === 'win') {
-                battlesWon++;
-                document.getElementById('battlesWon').textContent = battlesWon;
+        async function doGM() {
+            if (!walletConnected) {
+                alert('Please connect your wallet first!');
+                await connectWallet();
+                return;
             }
-            displayBattleResult(result);
-            showSection('resultScreen');
+
+            const now = Date.now();
+            if (now - lastGMTime < GM_COOLDOWN) {
+                alert('You can only say GM once every 24 hours!');
+                return;
+            }
+
+            const confirmed = confirm(
+                `Say GM to the community?\n\n` +
+                `You'll receive: ${GM_REWARD} ETH\n` +
+                `Network: Ink Sepolia Testnet`
+            );
+            
+            if (!confirmed) return;
+
+            showLoading('Sending GM transaction...');
+
+            try {
+                const tx = await signer.sendTransaction({
+                    to: userAddress,
+                    value: ethers.parseEther(GM_REWARD)
+                });
+
+                await tx.wait();
+
+                gmCount++;
+                lastGMTime = now;
+                saveData();
+                updateStats();
+                updateGMButton();
+
+                showTxInfo(tx.hash, 'GM Sent');
+                hideLoading();
+                
+                alert('☀️ GM! Your daily quest is complete!');
+                
+            } catch (error) {
+                console.error('GM error:', error);
+                alert('Transaction failed: ' + error.message);
+                hideLoading();
+            }
         }
 
-        function determineBattleResult(myType, opponentType) {
-            if (myType === opponentType) return 'draw';
+        function updateGMButton() {
+            const now = Date.now();
+            const timeSinceLastGM = now - lastGMTime;
             
-            const winConditions = {
-                rock: ['scissors', 'fire'],
-                paper: ['rock', 'water'],
-                scissors: ['paper', 'grass'],
-                fire: ['grass', 'scissors'],
-                water: ['fire', 'rock'],
-                grass: ['water', 'paper']
-            };
-            
-            return winConditions[myType]?.includes(opponentType) ? 'win' : 'lose';
-        }
-
-        function displayBattleResult(result) {
-            let message = '';
-            
-            if (result === 'win') {
-                message = `<div class="result-text win">🎉 VICTORY! 🎉</div>
-                          <p style="font-size: 1.2em;">Your ${myPet.name} defeated ${opponentPet.name}!</p>
-                          <p style="margin-top: 20px; color: #666;">${myPet.type} beats ${opponentPet.type}</p>`;
-            } else if (result === 'lose') {
-                message = `<div class="result-text lose">💔 DEFEAT 💔</div>
-                          <p style="font-size: 1.2em;">${opponentPet.name} defeated your ${myPet.name}!</p>
-                          <p style="margin-top: 20px; color: #666;">${opponentPet.type} beats ${myPet.type}</p>`;
+            if (timeSinceLastGM >= GM_COOLDOWN) {
+                document.getElementById('gmButton').disabled = false;
+                document.getElementById('countdown').textContent = 'Available Now!';
+                document.getElementById('countdown').style.color = '#27ae60';
             } else {
-                message = `<div class="result-text draw">🤝 DRAW 🤝</div>
-                          <p style="font-size: 1.2em;">Both pets are equally matched!</p>
-                          <p style="margin-top: 20px; color: #666;">Both used ${myPet.type}</p>`;
+                document.getElementById('gmButton').disabled = true;
+                startCountdown();
             }
-            
-            document.getElementById('resultMessage').innerHTML = message;
         }
 
-        function playAgain() {
-            findOpponent();
+        function startCountdown() {
+            setInterval(() => {
+                const now = Date.now();
+                const timeLeft = GM_COOLDOWN - (now - lastGMTime);
+                
+                if (timeLeft <= 0) {
+                    document.getElementById('countdown').textContent = 'Available Now!';
+                    document.getElementById('countdown').style.color = '#27ae60';
+                    document.getElementById('gmButton').disabled = false;
+                    return;
+                }
+                
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                document.getElementById('countdown').textContent = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                document.getElementById('countdown').style.color = '#e74c3c';
+            }, 1000);
         }
 
-        window.addEventListener('load', function() {
-            initWeb3Modal();
+        window.addEventListener('load', () => {
+            loadData();
         });
 
         if (typeof window.ethereum !== 'undefined') {
-            window.ethereum.on('accountsChanged', function (accounts) {
+            window.ethereum.on('accountsChanged', (accounts) => {
                 if (accounts.length === 0) {
                     disconnectWallet();
                 } else {
-                    userAddress = accounts[0];
-                    updateWalletUI();
+                    window.location.reload();
                 }
             });
 
-            window.ethereum.on('chainChanged', function () {
+            window.ethereum.on('chainChanged', () => {
                 window.location.reload();
             });
         }
