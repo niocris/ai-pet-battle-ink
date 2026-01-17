@@ -7,56 +7,53 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <style>
-        :root {
-            --neon-cyan: #00f7ff;
-            --neon-pink: #ff00aa;
-            --bg-dark: #0a0a12;
-        }
+        :root { --neon-cyan: #00f7ff; --neon-pink: #ff00aa; --bg-dark: #0a0a12; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-dark);
             background-image: linear-gradient(rgba(0,247,255,0.05) 1px, transparent 1px), 
                               linear-gradient(90deg, rgba(0,247,255,0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
-            color: white; padding: 20px;
+            background-size: 30px 30px; color: white; padding: 20px;
         }
-        .container { max-width: 1000px; margin: 0 auto; }
+        .container { max-width: 1100px; margin: 0 auto; }
         
-        /* ORIGINAL LOGO RESTORED */
+        /* LOGO WITH PAW */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 2px solid var(--neon-cyan); margin-bottom: 30px; }
         .logo-section { display: flex; align-items: center; gap: 15px; }
-        .logo { 
-            width: 60px; height: 60px; 
-            background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%); 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+        .logo-box {
+            width: 60px; height: 60px; border: 2px solid var(--neon-pink);
+            display: flex; align-items: center; justify-content: center;
+            transform: rotate(45deg); box-shadow: 0 0 15px var(--neon-pink);
         }
-        .logo-icon { font-size: 2em; }
-        .title { font-size: 2em; font-weight: bold; color: white; }
+        .logo-box svg { transform: rotate(-45deg); width: 35px; fill: var(--neon-cyan); }
+        .title { font-size: 1.8em; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
 
-        .btn { padding: 12px 30px; border: 2px solid var(--neon-cyan); background: transparent; color: var(--neon-cyan); cursor: pointer; font-weight: bold; border-radius: 30px; transition: 0.3s; }
+        .btn { padding: 12px 25px; border: 2px solid var(--neon-cyan); background: transparent; color: var(--neon-cyan); cursor: pointer; font-weight: bold; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: 0.3s; }
         .btn:hover { background: var(--neon-cyan); color: black; box-shadow: 0 0 15px var(--neon-cyan); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px; text-align: center; backdrop-filter: blur(10px); }
-        .stat-value { font-size: 2em; font-weight: bold; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: rgba(16, 20, 30, 0.9); border: 1px solid var(--neon-cyan); padding: 15px; text-align: center; border-radius: 5px; }
+        .stat-value { font-size: 1.6em; font-weight: bold; color: var(--neon-cyan); }
 
-        .main-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
-        .mint-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; padding: 30px; text-align: center; }
-        .collection-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; padding: 20px; height: 500px; overflow-y: auto; }
+        .main-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 25px; }
+        .mint-card { background: rgba(16, 20, 30, 0.95); border: 2px solid var(--neon-pink); padding: 30px; text-align: center; position: sticky; top: 20px; }
+        .collection-card { background: rgba(16, 20, 30, 0.8); border: 1px solid #333; padding: 20px; height: 650px; overflow-y: auto; border-radius: 5px; }
         
-        .pet-window { width: 280px; height: 280px; margin: 0 auto 20px; border-radius: 30px; border: 2px solid rgba(255, 255, 255, 0.1); background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
+        .pet-window { width: 320px; height: 320px; margin: 0 auto 20px; border: 3px solid var(--neon-pink); background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 25px rgba(255, 0, 170, 0.3); }
         .pet-window img { width: 100%; height: 100%; object-fit: cover; }
-        .empty-pet { font-size: 6em; opacity: 0.3; }
+        
+        .pet-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
+        .stat-item { background: rgba(255, 255, 255, 0.05); padding: 10px; border: 1px solid var(--neon-cyan); font-family: monospace; }
 
-        .pet-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
-        .stat-item { background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); }
-
-        .checkin-card { background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%); border: 2px solid rgba(245, 158, 11, 0.5); border-radius: 25px; padding: 30px; margin-top: 30px; text-align: center; }
-        .collection-item { display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .collection-thumb { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; }
+        .checkin-card { background: rgba(16, 20, 30, 0.9); border: 1px dashed var(--neon-cyan); padding: 25px; margin-top: 30px; text-align: center; }
+        
+        .collection-item { 
+            display: flex; align-items: center; gap: 15px; padding: 12px; 
+            border: 1px solid #222; margin-bottom: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .collection-item:hover { border-color: var(--neon-cyan); background: rgba(0, 247, 255, 0.05); }
+        .collection-thumb { width: 50px; height: 50px; border: 1px solid var(--neon-pink); object-fit: cover; }
     </style>
 </head>
 <body>
@@ -64,10 +61,12 @@
 <div class="container">
     <header class="header">
         <div class="logo-section">
-            <div class="logo"><span class="logo-icon">🎮</span></div>
+            <div class="logo-box">
+                <svg viewBox="0 0 24 24"><path d="M12 2C10.9 2 10 2.9 10 4C10 5.1 10.9 6 12 6C13.1 6 14 5.1 14 4C14 2.9 13.1 2 12 2ZM7 5C5.9 5 5 5.9 5 7C5 8.1 5.9 9 7 9C8.1 9 9 8.1 9 7C9 5.9 8.1 5 7 5ZM17 5C15.9 5 15 5.9 15 7C15 8.1 15.9 9 17 9C18.1 9 19 8.1 19 7C19 5.9 18.1 5 17 5ZM6 11C4.3 11 3 12.3 3 14C3 15.3 3.8 16.5 5 16.9V22H8V19H10V22H13V18.6C14.8 17.9 16 16.1 16 14C16 12.3 14.7 11 13 11C12 11 11 11.4 10.4 12.1C9.9 11.4 9 11 8 11C7.3 11 6.6 11.2 6 11Z"/></svg>
+            </div>
             <div class="title">AI Pet Arena</div>
         </div>
-        <div id="walletSection">
+        <div id="walletActions">
             <button class="btn" onclick="connectBrowser()">CONNECT WALLET</button>
         </div>
     </header>
@@ -75,121 +74,123 @@
     <div class="stats-grid">
         <div class="stat-card"><div>Pets Minted</div><div id="mintCount" class="stat-value">0</div></div>
         <div class="stat-card"><div>Check-in Streaks</div><div id="gmCount" class="stat-value">0</div></div>
-        <div class="stat-card"><div>Total Spent (ETH)</div><div id="totalSpent" class="stat-value">0.00000</div></div>
+        <div class="stat-card"><div>Spent ETH</div><div id="totalSpent" class="stat-value">0.00000</div></div>
     </div>
 
     <div class="main-layout">
         <div class="mint-card">
-            <div class="pet-window" id="petWindow"><div class="empty-pet">🎲</div></div>
-            <h2 id="petName" style="margin-bottom: 15px;">READY TO MINT</h2>
+            <div class="pet-window" id="petWindow"><span style="font-size: 5em; opacity: 0.2;">👾</span></div>
+            <h2 id="p-name" style="color: var(--neon-cyan); margin-bottom: 5px;">AI UNIT</h2>
+            <div id="p-rarity" style="font-weight: bold; margin-bottom: 15px; font-size: 0.9em;">READY</div>
             <div class="pet-stats">
                 <div class="stat-item">HP: <span id="s-hp">-</span></div>
                 <div class="stat-item">ATK: <span id="s-atk">-</span></div>
                 <div class="stat-item">DEF: <span id="s-def">-</span></div>
                 <div class="stat-item">SPD: <span id="s-spd">-</span></div>
             </div>
-            <button class="btn" style="margin-top: 25px; width: 100%; background: linear-gradient(135deg, #7c3aed, #db2777); color: white; border: none;" onclick="mintPet()">MINT PET (0.00001 ETH)</button>
+            <button class="btn" style="width: 100%; margin-top: 25px; background: linear-gradient(90deg, var(--neon-pink), #7c3aed); color: white; border: none;" onclick="mintPet()">MINT NEW UNIT (0.00001 ETH)</button>
         </div>
 
         <div class="collection-card">
-            <h3 style="margin-bottom: 15px;">MY COLLECTION</h3>
+            <h3 style="margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">MY COLLECTION</h3>
             <div id="collectionList"></div>
         </div>
     </div>
 
     <div class="checkin-card">
-        <h2 style="margin-bottom: 10px;">DAILY CHECK-IN</h2>
-        <button id="checkinBtn" class="btn" onclick="doCheckin()">BROADCAST CHECK-IN</button>
-        <div id="timerText" style="margin-top: 10px; font-weight: bold;"></div>
+        <h3>DAILY CHECK-IN</h3>
+        <button id="ciBtn" class="btn" style="margin-top: 15px;" onclick="doCheckin()">BROADCAST CHECK-IN</button>
+        <div id="timer" style="margin-top: 10px; font-size: 0.8em; opacity: 0.6;"></div>
     </div>
 </div>
 
 <script>
     const MY_WALLET = "0x0a52ff32eCcDC2027C00ffbb4066845632BacfE8";
-    const HF_KEY = "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";
-    const MODEL = "stabilityai/stable-diffusion-2-1"; // Updated Model
-
     let provider, signer, userAddr;
-    let stats = JSON.parse(localStorage.getItem('pet_stats') || '{"minted":0,"checkins":0,"spent":0,"lastGM":0}');
-    let collection = JSON.parse(localStorage.getItem('pet_collection') || "[]");
+    
+    let stats = JSON.parse(localStorage.getItem('game_stats') || '{"minted":0,"checkins":0,"spent":0,"last":0}');
+    let pets = JSON.parse(localStorage.getItem('my_pets') || "[]");
 
     async function connectBrowser() {
-        if (!window.ethereum) return alert("Install MetaMask");
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if(!window.ethereum) return alert("Install MetaMask");
+        const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
         provider = new ethers.BrowserProvider(window.ethereum);
         signer = await provider.getSigner();
-        userAddr = accounts[0];
-        document.getElementById('walletSection').innerHTML = `<span style="font-size: 0.9em; opacity: 0.8;">${userAddr.slice(0,6)}...${userAddr.slice(-4)}</span>`;
+        userAddr = accs[0];
+        document.getElementById('walletActions').innerHTML = `<span>${userAddr.slice(0,6)}...${userAddr.slice(-4)}</span>`;
     }
 
-    const rarities = [
-        { name: 'COMMON', weight: 50, hRange: [10,20], sRange: [1,10] },
-        { name: 'RARE', weight: 30, hRange: [20,30], sRange: [7,14] },
-        { name: 'UNIQUE', weight: 15, hRange: [30,42], sRange: [13,18] },
-        { name: 'LEGENDARY', weight: 5, hRange: [40,50], sRange: [14,20] }
-    ];
+    const rarityData = {
+        'COMMON': { weight: 50, h: [10,20], s: [1,10] },
+        'RARE': { weight: 30, h: [20,30], s: [7,14] },
+        'UNIQUE': { weight: 15, h: [30,42], s: [13,18] },
+        'LEGENDARY': { weight: 5, h: [40,50], s: [14,20] }
+    };
 
     async function mintPet() {
-        if (!signer) return alert("Connect wallet first!");
+        if(!signer) return alert("Connect Wallet!");
         try {
             const tx = await signer.sendTransaction({ to: MY_WALLET, value: ethers.parseEther("0.00001") });
             await tx.wait();
 
             const roll = Math.random() * 100;
-            let rarity = rarities[0];
+            let rarity = 'COMMON';
             let acc = 0;
-            for (let r of rarities) {
-                acc += r.weight;
-                if (roll <= acc) { rarity = r; break; }
+            for(let k in rarityData) {
+                acc += rarityData[k].weight;
+                if(roll <= acc) { rarity = k; break; }
             }
+            const r = rarityData[rarity];
+
+            // Complex Prompt Logic
+            let subject = "cybernetic animal creature";
+            if(rarity === 'UNIQUE' || rarity === 'LEGENDARY') {
+                subject = Math.random() > 0.5 ? "massive mechanical dragon" : "colossal cyber titan golem";
+            }
+
+            const prompt = `Full body ${subject}, ${rarity} rarity, neon cyberpunk aesthetic, hyper detailed, 8k, dark tech background, cinematic lighting`;
+            const seed = Math.floor(Math.random() * 1000000);
+            const imgUrl = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=512&height=512&seed=${seed}&nologo=true`;
 
             const pet = {
                 id: Date.now(),
-                rarity: rarity.name,
-                hp: Math.floor(Math.random()*(rarity.hRange[1]-rarity.hRange[0]))+rarity.hRange[0],
-                atk: Math.floor(Math.random()*(rarity.sRange[1]-rarity.sRange[0]))+rarity.sRange[0],
-                def: Math.floor(Math.random()*(rarity.sRange[1]-rarity.sRange[0]))+rarity.sRange[0],
-                spd: Math.floor(Math.random()*(rarity.sRange[1]-rarity.sRange[0]))+rarity.sRange[0],
-                img: await getAIImage(rarity.name)
+                rarity: rarity,
+                name: (rarity === 'UNIQUE' || rarity === 'LEGENDARY') ? (subject.includes('dragon') ? "CYBER DRAGON" : "CYBER TITAN") : "NEON UNIT",
+                hp: Math.floor(Math.random()*(r.h[1]-r.h[0]))+r.h[0],
+                atk: Math.floor(Math.random()*(r.s[1]-r.s[0]))+r.s[0],
+                def: Math.floor(Math.random()*(r.s[1]-r.s[0]))+r.s[0],
+                spd: Math.floor(Math.random()*(r.s[1]-r.s[0]))+r.s[0],
+                img: imgUrl
             };
 
-            collection.unshift(pet);
+            pets.unshift(pet);
             stats.minted++;
             stats.spent += 0.00001;
             save();
             updateUI();
             showPet(pet);
-        } catch (e) { alert(e.message); }
-    }
-
-    async function getAIImage(rarity) {
-        try {
-            const resp = await fetch(`https://api-inference.huggingface.co/models/${MODEL}`, {
-                method: "POST", headers: { Authorization: `Bearer ${HF_KEY}` },
-                body: JSON.stringify({ inputs: `3D high quality digital art, ${rarity} cybernetic creature monster, neon lights, dark background` })
-            });
-            const blob = await resp.blob();
-            return URL.createObjectURL(blob);
-        } catch { return "https://via.placeholder.com/280?text=AI+OFFLINE"; }
-    }
-
-    function doCheckin() {
-        const now = Date.now();
-        if (now - stats.lastGM < 86400000) return alert("Come back later!");
-        stats.checkins++;
-        stats.lastGM = now;
-        save();
-        updateUI();
-        alert("Check-in successful!");
+        } catch(e) { alert("Error: " + e.message); }
     }
 
     function showPet(p) {
         document.getElementById('petWindow').innerHTML = `<img src="${p.img}">`;
-        document.getElementById('petName').innerText = `${p.rarity} UNIT`;
+        document.getElementById('p-name').innerText = p.name;
+        document.getElementById('p-rarity').innerText = p.rarity;
+        document.getElementById('p-rarity').style.color = p.rarity === 'LEGENDARY' ? '#f1c40f' : (p.rarity === 'UNIQUE' ? '#9b59b6' : '#00f7ff');
         document.getElementById('s-hp').innerText = p.hp;
         document.getElementById('s-atk').innerText = p.atk;
         document.getElementById('s-def').innerText = p.def;
         document.getElementById('s-spd').innerText = p.spd;
+    }
+
+    function doCheckin() {
+        const now = Date.now();
+        if(now - stats.last < 86400000) return alert("Wait for 24h cooldown");
+        stats.checkins++;
+        stats.last = now;
+        save();
+        updateUI();
+        alert("Check-in recorded!");
     }
 
     function updateUI() {
@@ -197,27 +198,32 @@
         document.getElementById('gmCount').innerText = stats.checkins;
         document.getElementById('totalSpent').innerText = stats.spent.toFixed(5);
         
-        document.getElementById('collectionList').innerHTML = collection.map(p => `
-            <div class="collection-item">
+        document.getElementById('collectionList').innerHTML = pets.map((p, index) => `
+            <div class="collection-item" onclick='viewStoredPet(${index})'>
                 <img src="${p.img}" class="collection-thumb">
-                <div><strong>${p.rarity}</strong><br><small>HP: ${p.hp} | ATK: ${p.atk}</small></div>
+                <div><b>${p.name}</b><br><small>${p.rarity}</small></div>
             </div>
         `).join('');
 
-        const timeLeft = 86400000 - (Date.now() - stats.lastGM);
-        const btn = document.getElementById('checkinBtn');
-        if (timeLeft > 0) {
+        const timeLeft = 86400000 - (Date.now() - stats.last);
+        const btn = document.getElementById('ciBtn');
+        if(timeLeft > 0) {
             btn.disabled = true;
-            document.getElementById('timerText').innerText = `Next in: ${Math.ceil(timeLeft/3600000)}h`;
+            document.getElementById('timer').innerText = `Next in: ${Math.ceil(timeLeft/3600000)}h`;
         } else {
             btn.disabled = false;
-            document.getElementById('timerText').innerText = "Ready to Check-in!";
+            document.getElementById('timer').innerText = "Ready!";
         }
     }
 
+    function viewStoredPet(index) {
+        showPet(pets[index]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function save() {
-        localStorage.setItem('pet_stats', JSON.stringify(stats));
-        localStorage.setItem('pet_collection', JSON.stringify(collection));
+        localStorage.setItem('game_stats', JSON.stringify(stats));
+        localStorage.setItem('my_pets', JSON.stringify(pets));
     }
 
     window.onload = updateUI;
