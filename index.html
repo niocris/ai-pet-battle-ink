@@ -179,6 +179,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .pet-image-container img {
@@ -213,6 +214,42 @@
         .type-fire { background: #ff6b6b; color: white; }
         .type-water { background: #4ecdc4; color: white; }
         .type-grass { background: #95e1d3; color: white; }
+
+        .rarity-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .rarity-common { background: #95a5a6; color: white; }
+        .rarity-rare { background: #3498db; color: white; }
+        .rarity-unique { background: #9b59b6; color: white; }
+        .rarity-legendary { 
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.5);
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(243, 156, 18, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(243, 156, 18, 0.8); }
+        }
+
+        .special-creature {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
 
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -702,12 +739,59 @@
             }
         }
 
+        function getRarity() {
+            const rand = Math.random() * 100;
+            let cumulative = 0;
+            
+            for (const [rarity, data] of Object.entries(rarities)) {
+                cumulative += data.weight;
+                if (rand <= cumulative) {
+                    return rarity;
+                }
+            }
+            return 'common';
+        }
+
+        function canBeSpecialCreature(type, rarity) {
+            // Проверяем, может ли быть особое существо
+            for (const [creature, data] of Object.entries(specialCreatures)) {
+                if (data.types.includes(type)) {
+                    // Проверяем минимальную редкость
+                    const rarityOrder = ['common', 'rare', 'unique', 'legendary'];
+                    const currentRarityIndex = rarityOrder.indexOf(rarity);
+                    const minRarityIndex = rarityOrder.indexOf(data.minRarity);
+                    
+                    if (currentRarityIndex >= minRarityIndex) {
+                        // 30% шанс стать особым существом при подходящей редкости
+                        if (Math.random() < 0.3) {
+                            return creature;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
         async function generatePet() {
             const type = petTypes[Math.floor(Math.random() * petTypes.length)];
+            const rarity = getRarity();
+            const specialCreature = canBeSpecialCreature(type, rarity);
+            
+            console.log(`🎲 Rolled: ${type} - ${rarity}${specialCreature ? ` - ${specialCreature}!` : ''}`);
+
+            // Determine description
+            let description = petDescriptions[type][rarity];
+            if (specialCreature) {
+                description = specialCreatures[specialCreature].description;
+            }
             
             // Generate name with Claude AI
             let petName = '';
             try {
+                const namePrompt = specialCreature 
+                    ? `Generate a creative fantasy name for a ${rarity} ${specialCreature}. It's a ${type}-type creature described as: "${description}". Respond with ONLY the name, maximum 2 words.`
+                    : `Generate a creative fantasy name for a ${rarity} ${type}-type creature. It's described as: "${description}". Respond with ONLY the name, maximum 2 words.`;
+
                 const nameResponse = await fetch("https://api.anthropic.com/v1/messages", {
                     method: "POST",
                     headers: {
@@ -718,7 +802,7 @@
                         max_tokens: 1000,
                         messages: [{
                             role: "user",
-                            content: `Generate a creative fantasy name for a ${type}-type creature. It's described as: "${petDescriptions[type]}". Respond with ONLY the name, maximum 2 words.`
+                            content: namePrompt
                         }]
                     })
                 });
@@ -728,14 +812,13 @@
             } catch (error) {
                 console.error('AI name generation failed:', error);
                 const fallbackNames = {
-                    rock: ['Boulder', 'Granite'],
-                    fly: ['Zephyr', 'Sky'],
-                    electric: ['Spark', 'Volt'],
-                    fire: ['Inferno', 'Blaze'],
-                    water: ['Tide', 'Frost'],
-                    grass: ['Leaf', 'Vine']
+                    common: ['Tiny', 'Small', 'Young'],
+                    rare: ['Mighty', 'Swift', 'Brave'],
+                    unique: ['Ancient', 'Mystic', 'Elder'],
+                    legendary: ['Supreme', 'Divine', 'Eternal']
                 };
-                petName = fallbackNames[type][Math.floor(Math.random() * 2)];
+                const prefix = fallbackNames[rarity][Math.floor(Math.random() * 3)];
+                petName = `${prefix} ${type.charAt(0).toUpperCase() + type.slice(1)}`;
             }
 
             // Generate pixel art image with Hugging Face
@@ -743,8 +826,11 @@
             try {
                 showLoading('Generating pixel art with AI...');
                 
-                const prompt = `pixel art ${type} monster, ${petDescriptions[type]}, 64x64 sprite, retro game style, transparent background, simple colors`;
+                const creatureType = specialCreature || type;
+                const prompt = `pixel art ${rarity} ${creatureType} monster, ${description}, 64x64 sprite, retro game style, detailed, vibrant colors`;
                 
+                console.log('🎨 Generating image with prompt:', prompt);
+
                 const imageResponse = await fetch(
                     `https://api-inference.huggingface.co/models/${HF_MODEL}`,
                     {
@@ -778,9 +864,22 @@
             currentPet = {
                 name: petName,
                 type: type,
+                rarity: rarity,
+                specialCreature: specialCreature,
                 emoji: petEmojis[type][Math.floor(Math.random() * petEmojis[type].length)],
                 imageUrl: imageUrl
             };
+
+            // Show achievement for rare drops
+            if (rarity === 'legendary') {
+                setTimeout(() => {
+                    alert(`🎉 LEGENDARY DROP! 🎉\n\nYou got a ${petName}!\nRarity: ${rarity.toUpperCase()}`);
+                }, 500);
+            } else if (rarity === 'unique') {
+                setTimeout(() => {
+                    alert(`✨ UNIQUE DROP! ✨\n\nYou got a ${petName}!`);
+                }, 500);
+            }
 
             saveData();
             showPet();
@@ -792,17 +891,36 @@
             document.getElementById('petDisplay').style.display = 'block';
             
             // Show AI-generated image or fallback to emoji
+            const imageContainer = document.getElementById('petImageContainer');
+            
             if (currentPet.imageUrl) {
-                document.getElementById('petImageContainer').innerHTML = 
+                imageContainer.innerHTML = 
                     `<img src="${currentPet.imageUrl}" alt="${currentPet.name}" style="width: 100%; height: 100%; object-fit: contain;">`;
             } else {
-                document.getElementById('petImageContainer').innerHTML = 
+                imageContainer.innerHTML = 
                     `<div class="pet-emoji">${currentPet.emoji}</div>`;
+            }
+
+            // Add special creature badge
+            if (currentPet.specialCreature) {
+                const badge = document.createElement('div');
+                badge.className = 'special-creature';
+                badge.textContent = currentPet.specialCreature.toUpperCase();
+                imageContainer.appendChild(badge);
             }
             
             document.getElementById('petName').textContent = currentPet.name;
             document.getElementById('petType').className = `pet-type type-${currentPet.type}`;
             document.getElementById('petType').textContent = currentPet.type.toUpperCase();
+
+            // Add rarity badge
+            const rarityBadge = document.createElement('span');
+            rarityBadge.className = `rarity-badge rarity-${currentPet.rarity}`;
+            rarityBadge.textContent = `${rarities[currentPet.rarity].emoji} ${currentPet.rarity.toUpperCase()}`;
+            
+            const petCard = document.querySelector('.pet-card');
+            const nameElement = document.getElementById('petName');
+            nameElement.parentElement.insertBefore(rarityBadge, nameElement.nextSibling);
         }
 
         function showLoading(text) {
