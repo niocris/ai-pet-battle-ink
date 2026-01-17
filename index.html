@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pet Arena - Elemental Edition</title>
+    <title>AI Pet Arena - Horde Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <style>
         :root { --neon-cyan: #00f7ff; --neon-pink: #ff00aa; --bg-dark: #0a0a12; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-dark);
             background-image: linear-gradient(rgba(0,247,255,0.05) 1px, transparent 1px), 
                               linear-gradient(90deg, rgba(0,247,255,0.05) 1px, transparent 1px);
             background-size: 30px 30px; color: white; padding: 20px;
         }
-        .container { max-width: 1100px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
         
         .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 2px solid var(--neon-cyan); margin-bottom: 30px; }
         .logo-section { display: flex; align-items: center; gap: 15px; }
@@ -25,31 +25,33 @@
             transform: rotate(45deg); box-shadow: 0 0 15px var(--neon-pink);
         }
         .logo-box svg { transform: rotate(-45deg); width: 35px; fill: var(--neon-cyan); }
-        .title { font-size: 1.8em; font-weight: bold; letter-spacing: 2px; }
+        .title { font-size: 1.8em; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
 
         .btn { padding: 12px 25px; border: 2px solid var(--neon-cyan); background: transparent; color: var(--neon-cyan); cursor: pointer; font-weight: bold; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); transition: 0.3s; }
         .btn:hover:not(:disabled) { background: var(--neon-cyan); color: black; box-shadow: 0 0 15px var(--neon-cyan); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: #444; color: #444; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: rgba(16, 20, 30, 0.9); border: 1px solid var(--neon-cyan); padding: 15px; text-align: center; }
+        .stat-card { background: rgba(16, 20, 30, 0.9); border: 1px solid var(--neon-cyan); padding: 15px; text-align: center; border-radius: 5px; }
         .stat-value { font-size: 1.6em; font-weight: bold; color: var(--neon-cyan); }
 
-        .main-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 25px; }
-        .mint-card { background: rgba(16, 20, 30, 0.95); border: 2px solid var(--neon-pink); padding: 30px; text-align: center; }
-        .collection-card { background: rgba(16, 20, 30, 0.8); border: 1px solid #333; padding: 20px; height: 600px; overflow-y: auto; }
+        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .mint-card { background: rgba(16, 20, 30, 0.95); border: 2px solid var(--neon-pink); padding: 30px; text-align: center; height: fit-content; }
+        .collection-card { background: rgba(16, 20, 30, 0.8); border: 1px solid #333; padding: 20px; height: 700px; overflow-y: auto; border-radius: 5px; }
         
-        .pet-window { width: 300px; height: 300px; margin: 0 auto 20px; border: 3px solid var(--neon-pink); background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .pet-window { width: 320px; height: 320px; margin: 0 auto 20px; border: 3px solid var(--neon-pink); background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
         .pet-window img { width: 100%; height: 100%; object-fit: cover; }
-        
+        .loading-text { position: absolute; background: rgba(0,0,0,0.7); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 5; }
+
         .pet-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
         .stat-item { background: rgba(255, 255, 255, 0.05); padding: 10px; border: 1px solid var(--neon-cyan); font-family: monospace; }
 
-        .checkin-card { background: rgba(16, 20, 30, 0.9); border: 1px dashed var(--neon-cyan); padding: 20px; margin-top: 30px; text-align: center; }
+        .checkin-card { background: rgba(16, 20, 30, 0.9); border: 1px dashed var(--neon-cyan); padding: 25px; margin-top: 30px; text-align: center; }
         
-        .collection-item { display: flex; align-items: center; gap: 15px; padding: 10px; border: 1px solid #222; margin-bottom: 10px; cursor: pointer; }
+        .collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .collection-item { border: 1px solid #222; cursor: pointer; transition: 0.2s; background: #000; }
         .collection-item:hover { border-color: var(--neon-cyan); }
-        .collection-thumb { width: 50px; height: 50px; border: 1px solid var(--neon-pink); }
+        .collection-thumb { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
+        .item-info { font-size: 0.7em; padding: 5px; text-align: center; }
     </style>
 </head>
 <body>
@@ -67,47 +69,53 @@
 
     <div class="stats-grid">
         <div class="stat-card"><div>Units Minted</div><div id="mCount" class="stat-value">0</div></div>
-        <div class="stat-card"><div>Check-in Streaks</div><div id="gCount" class="stat-value">0</div></div>
+        <div class="stat-card"><div>GM Streaks</div><div id="gCount" class="stat-value">0</div></div>
         <div class="stat-card"><div>Spent ETH</div><div id="sEth" class="stat-value">0.00000</div></div>
     </div>
 
     <div class="main-layout">
         <div class="mint-card">
-            <div class="pet-window" id="pWin"><span style="font-size: 5em; opacity: 0.2;">👾</span></div>
-            <h2 id="pName">ELEMENTAL UNIT</h2>
-            <div id="pRarity" style="margin-bottom: 15px; font-weight: bold;">[READY TO MINT]</div>
+            <div class="pet-window" id="pWin">
+                <div id="loader" class="loading-text" style="display: none;">GENERATING...</div>
+                <span id="placeholder" style="font-size: 5em; opacity: 0.2;">👾</span>
+            </div>
+            <h2 id="pName" style="color: var(--neon-cyan);">READY TO MINT</h2>
+            <div id="pRarity" style="margin-bottom: 15px; font-weight: bold; font-size: 0.9em;">AWAITING COMMAND</div>
             <div class="pet-stats">
                 <div class="stat-item">HP: <span id="s-hp">-</span></div>
                 <div class="stat-item">ATK: <span id="s-atk">-</span></div>
                 <div class="stat-item">DEF: <span id="s-def">-</span></div>
                 <div class="stat-item">SPD: <span id="s-spd">-</span></div>
             </div>
-            <button class="btn" style="width: 100%; margin-top: 25px; border-color: var(--neon-pink); color: var(--neon-pink);" onclick="mint()">MINT NFT (0.00001 ETH)</button>
+            <button id="mintBtn" class="btn" style="width: 100%; margin-top: 25px; background: linear-gradient(90deg, var(--neon-pink), #7c3aed); color: white; border: none;" onclick="mint()">MINT NEW UNIT (0.00001 ETH)</button>
         </div>
+
         <div class="collection-card">
-            <h3 style="margin-bottom: 15px; border-bottom: 1px solid #333;">MY COLLECTION</h3>
-            <div id="cList"></div>
+            <h3 style="margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">MY COLLECTION</h3>
+            <div id="cGrid" class="collection-grid"></div>
         </div>
     </div>
 
     <div class="checkin-card">
-        <h2>DAILY CHECK-IN</h2>
-        <button id="ciBtn" class="btn" style="margin-top:10px" onclick="checkin()">BROADCAST CHECK-IN</button>
-        <div id="timer" style="margin-top:5px; font-size: 0.8em; opacity: 0.7;"></div>
+        <h3>DAILY CHECK-IN</h3>
+        <button id="ciBtn" class="btn" style="margin-top: 15px;" onclick="checkin()">BROADCAST CHECK-IN</button>
+        <div id="timer" style="margin-top: 10px; font-size: 0.8em; opacity: 0.6;"></div>
     </div>
 </div>
 
 <script>
     const MY_WALLET = "0x0a52ff32eCcDC2027C00ffbb4066845632BacfE8";
+    const HORDE_API = "https://aihorde.net/api/v2";
     let provider, signer, user;
-    let pets = JSON.parse(localStorage.getItem('pets_v2') || "[]");
-    let stats = JSON.parse(localStorage.getItem('stats_v2') || '{"minted":0,"gm":0,"spent":0,"last":0}');
+    
+    let stats = JSON.parse(localStorage.getItem('horde_stats') || '{"minted":0,"gm":0,"spent":0,"last":0}');
+    let pets = JSON.parse(localStorage.getItem('horde_pets') || "[]");
 
     const rarityCfg = {
-        'COMMON': { weight: 50, h: [10,20], s: [1,10], color: '#95a5a6' },
-        'RARE': { weight: 30, h: [20,30], s: [7,14], color: '#3498db' },
-        'UNIQUE': { weight: 15, h: [30,42], s: [13,18], color: '#9b59b6' },
-        'LEGENDARY': { weight: 5, h: [40,50], s: [14,20], color: '#f1c40f' }
+        'COMMON': { w: 50, h: [10,20], s: [1,10] },
+        'RARE': { w: 30, h: [20,30], s: [7,14] },
+        'UNIQUE': { w: 15, h: [30,42], s: [13,18] },
+        'LEGENDARY': { w: 5, h: [40,50], s: [14,20] }
     };
     const types = ['FIRE', 'WATER', 'ELECTRIC', 'GRASS', 'ROCK', 'FLY'];
 
@@ -122,47 +130,80 @@
 
     async function mint() {
         if(!signer) return alert("Connect Wallet!");
+        const btn = document.getElementById('mintBtn');
+        btn.disabled = true;
+        
         try {
             const tx = await signer.sendTransaction({ to: MY_WALLET, value: ethers.parseEther("0.00001") });
+            document.getElementById('loader').style.display = 'flex';
             await tx.wait();
 
             const roll = Math.random() * 100;
             let rarity = 'COMMON'; let acc = 0;
-            for(let k in rarityCfg) { acc += rarityCfg[k].weight; if(roll <= acc) { rarity = k; break; } }
+            for(let k in rarityCfg) { acc += rarityCfg[k].w; if(roll <= acc) { rarity = k; break; } }
             
             const type = types[Math.floor(Math.random()*types.length)];
             const r = rarityCfg[rarity];
             
-            // Logic for Dragons/Titans
             let subject = `${type} elemental creature`;
             if(rarity === 'UNIQUE' || rarity === 'LEGENDARY') {
-                subject = Math.random() > 0.5 ? `Massive ${type} Dragon` : `${type} Cyber Titan Golem`;
+                subject = Math.random() > 0.5 ? `${type} Giant Dragon` : `${type} Cybernetic Titan`;
             }
 
-            const prompt = `Full body ${subject}, ${rarity} rarity, cyberpunk neon, detailed digital art, 8k, dark background`;
-            const img = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=512&height=512&seed=${Date.now()}`;
+            const prompt = `Full body ${subject}, ${rarity} rarity, cyberpunk aesthetic, high quality digital art, neon, solid dark background`;
+            const imgUrl = await generateAIHorde(prompt);
 
             const pet = {
-                id: Date.now(), rarity, type, 
+                id: Date.now(), rarity, type, img: imgUrl,
                 name: (rarity === 'UNIQUE' || rarity === 'LEGENDARY') ? subject.toUpperCase() : `${type} UNIT`,
                 hp: Math.floor(Math.random()*(r.h[1]-r.h[0]))+r.h[0],
                 atk: Math.floor(Math.random()*(r.s[1]-r.s[0]))+r.s[0],
                 def: Math.floor(Math.random()*(r.s[1]-r.s[0]))+r.s[0],
-                spd: Math.floor(Math.random()*(r.s[1]-r.s[0]))+r.s[0],
-                img: img
+                spd: Math.floor(Math.random()*(r.s[1]-r.s[0]))+r.s[0]
             };
 
             pets.unshift(pet);
             stats.minted++; stats.spent += 0.00001;
             save(); updateUI(); show(pet);
-        } catch(e) { alert("Error: " + e.message); }
+        } catch(e) { 
+            alert("Error: " + e.message); 
+        } finally {
+            btn.disabled = false;
+            document.getElementById('loader').style.display = 'none';
+        }
+    }
+
+    async function generateAIHorde(prompt) {
+        // Request generation
+        const req = await fetch(`${HORDE_API}/generate/async`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': '0000000000' }, // Anonymous key
+            body: JSON.stringify({
+                prompt: prompt,
+                params: { cfg_scale: 7, height: 512, width: 512, steps: 20 },
+                models: ["Deliberate", "Stable Diffusion"]
+            })
+        });
+        const { id } = await req.json();
+
+        // Poll for result
+        while(true) {
+            await new Promise(r => setTimeout(r, 3000));
+            const check = await fetch(`${HORDE_API}/generate/check/${id}`);
+            const status = await check.json();
+            if(status.done) {
+                const res = await fetch(`${HORDE_API}/generate/status/${id}`);
+                const data = await res.json();
+                return data.generations[0].img;
+            }
+        }
     }
 
     function show(p) {
-        document.getElementById('pWin').innerHTML = `<img src="${p.img}" onerror="this.src='https://via.placeholder.com/300?text=Loading...'">`;
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('pWin').innerHTML = `<div id="loader" class="loading-text" style="display: none;">GENERATING...</div><img src="${p.img}">`;
         document.getElementById('pName').innerText = p.name;
-        document.getElementById('pRarity').innerText = `${p.rarity} | ${p.type}`;
-        document.getElementById('pRarity').style.color = rarityCfg[p.rarity].color;
+        document.getElementById('pRarity').innerText = `${p.rarity} | TYPE: ${p.type}`;
         document.getElementById('s-hp').innerText = p.hp;
         document.getElementById('s-atk').innerText = p.atk;
         document.getElementById('s-def').innerText = p.def;
@@ -170,35 +211,31 @@
     }
 
     function checkin() {
-        if(Date.now() - stats.last < 86400000) return alert("Wait for cooldown");
+        if(Date.now() - stats.last < 86400000) return alert("24h Cooldown active");
         stats.gm++; stats.last = Date.now();
         save(); updateUI();
+        alert("Daily check-in successful!");
     }
 
     function updateUI() {
         document.getElementById('mCount').innerText = stats.minted;
         document.getElementById('gCount').innerText = stats.gm;
         document.getElementById('sEth').innerText = stats.spent.toFixed(5);
-        document.getElementById('cList').innerHTML = pets.map((p, i) => `
+        
+        document.getElementById('cGrid').innerHTML = pets.map((p, i) => `
             <div class="collection-item" onclick="view(${i})">
                 <img src="${p.img}" class="collection-thumb">
-                <div><b>${p.name}</b><br><small>${p.rarity} [${p.type}]</small></div>
+                <div class="item-info">${p.rarity}</div>
             </div>
         `).join('');
-        
+
         const left = 86400000 - (Date.now() - stats.last);
-        const btn = document.getElementById('ciBtn');
-        if(left > 0) {
-            btn.disabled = true;
-            document.getElementById('timer').innerText = `Next in: ${Math.ceil(left/3600000)}h`;
-        } else {
-            btn.disabled = false;
-            document.getElementById('timer').innerText = "Ready!";
-        }
+        document.getElementById('ciBtn').disabled = left > 0;
+        document.getElementById('timer').innerText = left > 0 ? `Next in: ${Math.ceil(left/3600000)}h` : "Ready!";
     }
 
     function view(i) { show(pets[i]); window.scrollTo({top:0, behavior:'smooth'}); }
-    function save() { localStorage.setItem('pets_v2', JSON.stringify(pets)); localStorage.setItem('stats_v2', JSON.stringify(stats)); }
+    function save() { localStorage.setItem('horde_stats', JSON.stringify(stats)); localStorage.setItem('horde_pets', JSON.stringify(pets)); }
     window.onload = updateUI;
 </script>
 </body>
