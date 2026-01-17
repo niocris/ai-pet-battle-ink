@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pet Arena - Neon Cyber Edition</title>
+    <title>AI Pet Arena - Cyberpunk Edition</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+
     <style>
         :root {
             --neon-cyan: #00f7ff;
@@ -11,1012 +15,325 @@
             --neon-yellow: #ffd900;
             --neon-green: #00ff99;
             --bg-dark: #0a0a12;
-            --panel-bg: rgba(16, 20, 30, 0.85);
+            --panel-bg: rgba(16, 20, 30, 0.9);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
-            /* Cyber grid background */
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-dark);
             background-image: 
-                linear-gradient(rgba(0, 247, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 247, 255, 0.1) 1px, transparent 1px);
-            background-size: 30px 30px;
+                linear-gradient(rgba(0, 247, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 247, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: white;
             min-height: 100vh;
-            color: white;
-            padding: 20px;
+            padding-bottom: 50px;
         }
 
-        /* Utility for glowing text */
-        .neon-text-cyan { text-shadow: 0 0 5px var(--neon-cyan), 0 0 15px var(--neon-cyan); }
-        .neon-text-pink { text-shadow: 0 0 5px var(--neon-pink), 0 0 15px var(--neon-pink); }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        /* --- Header & Logo --- */
+        /* --- HEADER --- */
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 50px;
-            padding: 20px 0;
-            border-bottom: 2px solid rgba(0, 247, 255, 0.2);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 30px 0; border-bottom: 2px solid var(--neon-cyan);
+            margin-bottom: 40px; flex-wrap: wrap; gap: 20px;
         }
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 20px;
+        .logo-section { display: flex; align-items: center; gap: 15px; }
+        
+        .logo-box {
+            width: 60px; height: 60px; border: 2px solid var(--neon-pink);
+            display: flex; align-items: center; justify-content: center;
+            transform: rotate(45deg); box-shadow: 0 0 15px var(--neon-pink);
         }
+        .logo-box svg { transform: rotate(-45deg); width: 35px; fill: var(--neon-cyan); }
 
-        .logo {
-            width: 70px;
-            height: 70px;
-            /* Square, glowing containment field */
-            background: rgba(0, 0, 0, 0.5);
-            border: 3px solid var(--neon-pink);
-            box-shadow: 0 0 20px var(--neon-pink), inset 0 0 20px var(--neon-pink);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform: rotate(45deg); /* Diamond shape */
-        }
+        .title { font-size: 2em; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 10px var(--neon-pink); }
 
-        .logo-svg {
-            width: 40px;
-            height: 40px;
-            fill: var(--neon-cyan);
-            filter: drop-shadow(0 0 5px var(--neon-cyan));
-            transform: rotate(-45deg); /* Counter-rotate icon */
-        }
+        .btn-group { display: flex; gap: 10px; }
 
-        .title {
-            font-size: 2.5em;
-            font-weight: 800;
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px var(--neon-pink);
+        .btn {
+            padding: 12px 20px; border: 2px solid var(--neon-cyan); background: transparent;
+            color: var(--neon-cyan); font-weight: bold; cursor: pointer; transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); text-transform: uppercase;
         }
+        .btn:hover { background: var(--neon-cyan); color: black; box-shadow: 0 0 20px var(--neon-cyan); }
+        .btn-pink { border-color: var(--neon-pink); color: var(--neon-pink); }
+        .btn-pink:hover { background: var(--neon-pink); color: white; box-shadow: 0 0 20px var(--neon-pink); }
 
-        /* --- Buttons --- */
-        .connect-btn {
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid var(--neon-cyan);
-            color: var(--neon-cyan);
-            padding: 12px 30px;
-            /* Angular, slanted button */
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .connect-btn:hover {
-            background: var(--neon-cyan);
-            color: var(--bg-dark);
-            box-shadow: 0 0 30px var(--neon-cyan);
-        }
-
-        .connect-btn.connected {
-            border-color: var(--neon-green);
-            color: var(--neon-green);
-        }
-        .connect-btn.connected:hover {
-            background: var(--neon-green);
-            color: var(--bg-dark);
-            box-shadow: 0 0 30px var(--neon-green);
-        }
-
-        /* --- Cyber Panels (General Card Style) --- */
-        .cyber-panel {
-            background: var(--panel-bg);
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 15px rgba(0, 247, 255, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.8);
-            padding: 30px;
-            position: relative;
-            backdrop-filter: blur(5px);
-        }
-        /* Add glowing corners to panels */
-        .cyber-panel::before {
-            content: ''; position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border-top: 3px solid var(--neon-pink); border-left: 3px solid var(--neon-pink);
-        }
-        .cyber-panel::after {
-            content: ''; position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; border-bottom: 3px solid var(--neon-pink); border-right: 3px solid var(--neon-pink);
-        }
-
-
-        /* --- Stats Grid --- */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 25px;
-            margin-bottom: 50px;
-        }
-
+        /* --- STATS --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
         .stat-card {
-            @extend .cyber-panel;
-            background: var(--panel-bg);
-            border: 2px solid var(--neon-cyan);
-            box-shadow: inset 0 0 20px rgba(0, 247, 255, 0.1);
-            padding: 25px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
+            background: var(--panel-bg); border-left: 5px solid var(--neon-cyan);
+            padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
-        /* Scanline effect for stat cards */
-        .stat-card::after {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(transparent 50%, rgba(0, 247, 255, 0.05) 50%);
-            background-size: 100% 4px;
-            pointer-events: none;
-        }
+        .stat-label { font-size: 0.8em; color: var(--neon-cyan); text-transform: uppercase; }
+        .stat-value { font-size: 1.8em; font-weight: bold; }
 
-        .stat-label {
-            font-size: 1em;
-            color: var(--neon-cyan);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-transform: uppercase;
-        }
-        .stat-label span { filter: drop-shadow(0 0 5px var(--neon-cyan)); }
-
-        .stat-value {
-            font-size: 2.2em;
-            font-weight: 800;
-            color: white;
-            text-shadow: 0 0 10px var(--neon-cyan);
-        }
-
-        /* --- Main Minting Area --- */
+        /* --- MAIN AREA --- */
         .main-card {
-            @extend .cyber-panel;
-            background: var(--panel-bg);
-            border: 3px solid var(--neon-pink);
-            box-shadow: 0 0 40px rgba(255, 0, 170, 0.3), inset 0 0 40px rgba(0, 0, 0, 0.5);
-            padding: 50px;
-            text-align: center;
-            margin-bottom: 40px;
+            background: var(--panel-bg); border: 1px solid rgba(255,255,255,0.1);
+            padding: 40px; text-align: center; position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
         }
 
-        .pet-display-area { margin: 30px 0; }
-
-        /* Holographic Pet Container */
-        .pet-image-container {
-            width: 300px;
-            height: 300px;
-            margin: 0 auto 30px;
-            /* Hologram projector look */
-            background: radial-gradient(circle at center, rgba(255, 0, 170, 0.2) 0%, rgba(0, 0, 0, 0.8) 80%);
-            border: 4px solid var(--neon-pink);
-            box-shadow: 0 0 50px var(--neon-pink), inset 0 0 30px var(--neon-pink);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
+        .pet-window {
+            width: 300px; height: 300px; margin: 0 auto 30px;
+            border: 4px solid var(--neon-pink); background: #000;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; box-shadow: 0 0 30px var(--neon-pink);
         }
-        /* Rotating scanner ring effect */
-        .pet-image-container::before {
-            content: ''; position: absolute; width: 100%; height: 5px; background: var(--neon-cyan); top: 0;
-            animation: scanDown 2s ease-in-out infinite alternate;
-            box-shadow: 0 0 20px var(--neon-cyan);
-            opacity: 0.7;
+        .pet-window img { width: 100%; height: 100%; object-fit: cover; }
+        .pet-window::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: var(--neon-cyan); animation: scan 3s infinite linear; opacity: 0.5;
         }
-        @keyframes scanDown {
-            0% { top: 0%; } 100% { top: 98%; }
-        }
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
 
-        .pet-image-container img {
-            width: 100%; height: 100%; object-fit: cover;
-            filter: drop-shadow(0 0 20px var(--neon-pink));
-        }
-
-        .pet-emoji { font-size: 9em; filter: drop-shadow(0 0 30px var(--neon-pink)); }
-        .empty-pet { font-size: 7em; opacity: 0.5; filter: grayscale(1) drop-shadow(0 0 20px var(--neon-cyan)); }
-
-        .pet-name {
-            font-size: 2.5em;
-            font-weight: 800;
-            margin: 20px 0 15px;
-            color: white;
-            text-shadow: 0 0 15px var(--neon-pink);
-            text-transform: uppercase;
-        }
-
-        /* Badges revamped as data chips */
-        .pet-badges {
-            display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap;
-        }
-        .badge {
-            padding: 8px 20px;
-            font-family: monospace;
-            font-size: 1em;
-            font-weight: bold;
-            border: 2px solid;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px currentColor;
-        }
-
-        .type-rock { background: rgba(184, 134, 11, 0.2); border-color: #b8860b; color: #ffd700; }
-        .type-fly { background: rgba(135, 206, 235, 0.2); border-color: #87ceeb; color: #87ceeb; }
-        .type-electric { background: rgba(255, 215, 0, 0.2); border-color: #ffd700; color: #ffd700;}
-        .type-fire { background: rgba(255, 107, 107, 0.2); border-color: #ff6b6b; color: #ff6b6b;}
-        .type-water { background: rgba(78, 205, 196, 0.2); border-color: #4ecdc4; color: #4ecdc4;}
-        .type-grass { background: rgba(149, 225, 211, 0.2); border-color: #95e1d3; color: #95e1d3;}
-
-        .rarity-common { background: rgba(149, 165, 166, 0.2); border-color: #95a5a6; color: #ecf0f1;}
-        .rarity-rare { background: rgba(52, 152, 219, 0.2); border-color: #3498db; color: #3498db;}
-        .rarity-unique { background: rgba(155, 89, 182, 0.2); border-color: #9b59b6; color: #9b59b6;}
-        .rarity-legendary { 
-            background: linear-gradient(135deg, rgba(243, 156, 18, 0.3) 0%, rgba(230, 126, 34, 0.3) 100%);
-            border-color: #f39c12; color: #f39c12;
-            animation: glow 1.5s infinite alternate;
-        }
-
-        @keyframes glow {
-            0% { box-shadow: 0 0 10px #f39c12; }
-            100% { box-shadow: 0 0 30px #f39c12, inset 0 0 20px #f39c12; }
-        }
-
-        .pet-stats {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 450px; margin: 30px auto 0;
-        }
-
-        .stat-item {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border: 1px solid var(--neon-cyan);
-            /* Cut corners */
-            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
-        }
-
-        .stat-item-label {
-            font-size: 0.9em; color: var(--neon-cyan); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
-        }
-
-        .stat-item-value {
-            font-size: 1.8em; font-weight: 800; color: white; text-shadow: 0 0 10px white; font-family: monospace;
-        }
-
-        .mint-text {
-            font-size: 1.5em; margin-bottom: 30px; color: white; text-shadow: 0 0 10px var(--neon-cyan);
-        }
-
-        /* --- Holographic Action Buttons --- */
         .mint-btn {
-            background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
-            border: none; color: white; padding: 20px 50px;
-            font-size: 1.3em; font-weight: 800; cursor: pointer;
-            /* Angular shape */
-            clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
-            transition: all 0.2s;
-            text-transform: uppercase; letter-spacing: 2px;
-            text-shadow: 0 0 5px rgba(0,0,0,0.5);
-            display: inline-flex; align-items: center; gap: 15px;
+            font-size: 1.5em; padding: 20px 60px; background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+            border: none; color: white; font-weight: 800; cursor: pointer;
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); transition: 0.4s;
         }
+        .mint-btn:hover { transform: scale(1.05); filter: brightness(1.2); box-shadow: 0 0 30px var(--neon-pink); }
 
-        .mint-btn:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 0 50px var(--neon-pink);
-            filter: brightness(1.2);
+        /* --- PET INFO --- */
+        .pet-name { font-size: 2.5em; margin-bottom: 10px; text-transform: uppercase; text-shadow: 0 0 10px white; }
+        .badges { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .badge { padding: 5px 15px; font-weight: bold; font-size: 0.9em; border: 1px solid; }
+        
+        .grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 400px; margin: 0 auto; }
+        .grid-item { background: rgba(0,0,0,0.5); padding: 10px; border: 1px solid var(--neon-cyan); }
+
+        /* --- OVERLAY --- */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center;
+            z-index: 1000; flex-direction: column;
         }
-
-        .mint-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
-
-        .price-tag { font-size: 0.8em; opacity: 0.9; font-family: monospace;}
-
-        /* --- Daily Quest Panel --- */
-        .daily-quest {
-            background: var(--panel-bg);
-            border: 3px solid var(--neon-yellow);
-            box-shadow: 0 0 30px rgba(255, 217, 0, 0.3), inset 0 0 30px rgba(0,0,0,0.5);
-            border-radius: 0; /* Sharp corners */
-            padding: 35px;
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-        /* Yellow hazard stripes for quest */
-        .daily-quest::before {
-            content: ''; position: absolute; top: 0; left: -50%; width: 200%; height: 100%;
-            background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 217, 0, 0.1) 10px, rgba(255, 217, 0, 0.1) 20px);
-            pointer-events: none;
-        }
-
-        .quest-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;
-            position: relative; z-index: 2;
-        }
-
-        .quest-title {
-            font-size: 1.6em; font-weight: 800; display: flex; align-items: center; gap: 10px;
-            color: var(--neon-yellow); text-shadow: 0 0 15px var(--neon-yellow); text-transform: uppercase;
-        }
-
-        .quest-reward {
-            color: var(--neon-green); font-weight: bold; font-size: 1.3em; font-family: monospace;
-            text-shadow: 0 0 10px var(--neon-green);
-        }
-
-        .quest-desc {
-            color: rgba(255, 255, 255, 0.9); margin-bottom: 25px; font-size: 1.1em; position: relative; z-index: 2;
-        }
-
-        .gm-btn {
-            background: linear-gradient(90deg, var(--neon-yellow), #ff6b6b);
-            border: none; color: white; padding: 15px 50px;
-            font-size: 1.3em; font-weight: 800; cursor: pointer;
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-            transition: transform 0.2s;
-            text-transform: uppercase; text-shadow: 0 0 5px rgba(0,0,0,0.5);
-            position: relative; z-index: 2;
-        }
-
-        .gm-btn:hover:not(:disabled) {
-            transform: scale(1.05); box-shadow: 0 0 40px var(--neon-yellow);
-        }
-
-        .quest-timer {
-            background: rgba(0, 0, 0, 0.8); padding: 15px 25px; border: 1px solid var(--neon-green);
-            margin-top: 20px; font-weight: bold; font-family: monospace; font-size: 1.1em;
-            display: inline-block; position: relative; z-index: 2;
-            box-shadow: 0 0 15px rgba(0, 255, 153, 0.2);
-        }
-
-        /* --- Info Sections --- */
-        .info-section {
-            background: var(--panel-bg);
-            border: 2px solid var(--neon-cyan);
-            padding: 30px; margin-bottom: 20px; backdrop-filter: blur(5px);
-            box-shadow: inset 0 0 20px rgba(0, 247, 255, 0.1);
-        }
-
-        .info-title {
-            font-size: 1.4em; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
-            color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px;
-        }
-
-        .info-section p {
-            color: rgba(255, 255, 255, 0.8); margin: 12px 0; line-height: 1.6; font-size: 1.05em;
-        }
-        .info-section strong { color: var(--neon-pink); }
-
-        /* --- Loading Overlay --- */
-        .loading-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(10, 10, 18, 0.95);
-            backdrop-filter: blur(20px); display: none; align-items: center; justify-content: center; z-index: 1000;
-        }
-        .loading-overlay.active { display: flex; }
-
         .spinner {
-            border: 5px solid rgba(255, 0, 170, 0.2);
-            border-top: 5px solid var(--neon-pink);
-            border-left: 5px solid var(--neon-cyan);
-            border-radius: 50%; width: 80px; height: 80px;
-            animation: spin 0.8s linear infinite; margin: 0 auto 30px;
-            box-shadow: 0 0 30px var(--neon-pink);
+            width: 60px; height: 60px; border: 5px solid var(--neon-cyan);
+            border-top-color: var(--neon-pink); border-radius: 50%; animation: spin 1s infinite linear;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .loading-text {
-            font-size: 1.5em; color: white; text-transform: uppercase; letter-spacing: 3px;
-            animation: blink 1s infinite;
-        }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-        .wallet-info { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; margin-top: 10px;}
-        .wallet-address { font-family: monospace; color: var(--neon-cyan); font-size: 0.9em; }
-
-        @media (max-width: 768px) {
-            .header { flex-direction: column; gap: 30px; text-align: center; }
-            .logo-section { flex-direction: column; }
-            .title { font-size: 2em; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .main-card { padding: 30px 20px; }
-            .pet-image-container { width: 250px; height: 250px; }
-            .pet-stats { grid-template-columns: 1fr; }
-            .mint-btn, .gm-btn { width: 100%; justify-content: center; padding: 15px; }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo-section">
-                <div class="logo">
-                    <svg class="logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C10.9 2 10 2.9 10 4C10 5.1 10.9 6 12 6C13.1 6 14 5.1 14 4C14 2.9 13.1 2 12 2ZM7 5C5.9 5 5 5.9 5 7C5 8.1 5.9 9 7 9C8.1 9 9 8.1 9 7C9 5.9 8.1 5 7 5ZM17 5C15.9 5 15 5.9 15 7C15 8.1 15.9 9 17 9C18.1 9 19 8.1 19 7C19 5.9 18.1 5 17 5ZM6 11C4.3 11 3 12.3 3 14C3 15.3 3.8 16.5 5 16.9V22H8V19H10V22H13V18.6C14.8 17.9 16 16.1 16 14C16 12.3 14.7 11 13 11C12 11 11 11.4 10.4 12.1C9.9 11.4 9 11 8 11C7.3 11 6.6 11.2 6 11Z"/>
-                    </svg>
-                </div>
-                <div class="title">AI Pet Arena</div>
-            </div>
-            <div>
-                <button id="walletBtn" class="connect-btn" onclick="toggleWallet()">
-                    Connect_Terminal
-                </button>
-                <div id="walletInfo" class="wallet-info" style="display: none;">
-                    <span id="walletAddress" class="wallet-address"></span>
-                </div>
-            </div>
-        </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">
-                    <span>🎨</span> Units Minted
-                </div>
-                <div class="stat-value" id="mintCount">0</div>
+<div class="container">
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo-box">
+                <svg viewBox="0 0 24 24"><path d="M12 2C10.9 2 10 2.9 10 4C10 5.1 10.9 6 12 6C13.1 6 14 5.1 14 4C14 2.9 13.1 2 12 2ZM7 5C5.9 5 5 5.9 5 7C5 8.1 5.9 9 7 9C8.1 9 9 8.1 9 7C9 5.9 8.1 5 7 5ZM17 5C15.9 5 15 5.9 15 7C15 8.1 15.9 9 17 9C18.1 9 19 8.1 19 7C19 5.9 18.1 5 17 5ZM6 11C4.3 11 3 12.3 3 14C3 15.3 3.8 16.5 5 16.9V22H8V19H10V22H13V18.6C14.8 17.9 16 16.1 16 14C16 12.3 14.7 11 13 11C12 11 11 11.4 10.4 12.1C9.9 11.4 9 11 8 11C7.3 11 6.6 11.2 6 11Z"/></svg>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">
-                    <span>☀️</span> GM_Streaks
-                </div>
-                <div class="stat-value" id="gmCount">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">
-                    <span>💰</span> Total Spent (ETH)
-                </div>
-                <div class="stat-value" id="totalSpent">0.00000</div>
-            </div>
+            <h1 class="title">AI ARENA</h1>
         </div>
-
-        <div class="main-card">
-            <div id="emptyState">
-                <div class="mint-text">INITIALIZE AI COMPANION MINTING SEQUENCE...</div>
-                <div class="pet-image-container">
-                    <div class="empty-pet">👾</div>
-                </div>
-                <button class="mint-btn" onclick="mintPet()">
-                    🎲 MINT_PET
-                    <span class="price-tag">[0.00001 ETH]</span>
-                </button>
-            </div>
-
-            <div id="petDisplay" style="display: none;">
-                <div class="pet-display-area">
-                    <div class="pet-image-container" id="petImageContainer">
-                        <div class="pet-emoji">🎮</div>
-                    </div>
-                    <div class="pet-name" id="petName">Your Pet</div>
-                    <div class="pet-badges" id="petBadges">
-                        </div>
-                    
-                    <div class="pet-stats">
-                        <div class="stat-item">
-                            <div class="stat-item-label">❤️ HP // INTEGRITY</div>
-                            <div class="stat-item-value" id="statHP">10</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-item-label">⚔️ ATK // FIREPOWER</div>
-                            <div class="stat-item-value" id="statATK">10</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-item-label">🛡️ DEF // SHIELDING</div>
-                            <div class="stat-item-value" id="statDEF">10</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-item-label">⚡ SPD // VELOCITY</div>
-                            <div class="stat-item-value" id="statSpeed">10</div>
-                        </div>
-                    </div>
-                </div>
-                <button class="mint-btn" onclick="mintPet()" style="margin-top: 30px;">
-                    🔄 MINT_NEW_UNIT
-                    <span class="price-tag">[0.00001 ETH]</span>
-                </button>
-            </div>
+        <div class="btn-group">
+            <button id="browserBtn" class="btn" onclick="connectBrowser()">MetaMask</button>
+            <button id="wcBtn" class="btn btn-pink" onclick="connectWC()">WalletConnect</button>
         </div>
+    </header>
 
-        <div class="daily-quest">
-            <div class="quest-header">
-                <div class="quest-title">
-                    <span>⚡</span> DAILY_GM_PROTOCOL
-                </div>
-                <div class="quest-reward">REWARD: +0.000005 ETH</div>
-            </div>
-            <div class="quest-desc">
-                Broadcast 'GM' signal to the network daily to receive crypto-rewards.
-            </div>
-            <div style="text-align: center;">
-                <button id="gmButton" class="gm-btn" onclick="doGM()">
-                    ☀️ BROADCAST_GM!
-                </button>
-            </div>
-            <div class="quest-timer">
-                NEXT BROADCAST IN: <span id="countdown" style="color: var(--neon-green);">00:00:00</span>
-            </div>
-        </div>
-
-        <div class="info-section">
-            <div class="info-title">🎮 SYSTEM PROTOCOLS (How It Works)</div>
-            <p><strong>1.</strong> Jack-in your Ink Wallet terminal.</p>
-            <p><strong>2.</strong> Mint AI-generated bio-digital pets for 0.00001 ETH.</p>
-            <p><strong>3.</strong> Execute daily GM Protocol for reward credits.</p>
-            <p><strong>4.</strong> Amass unique digital lifeforms.</p>
-        </div>
-
-        <div class="info-section">
-            <div class="info-title">✨ RARITY MATRIX</div>
-            <p><strong>⚪ COMMON [50%]</strong> - Stats: 1-10</p>
-            <p><strong>🔵 RARE [30%]</strong> - Stats: 7-14</p>
-            <p><strong>🟣 UNIQUE [15%]</strong> - Stats: 13-18 | Detect Special Anomalies.</p>
-            <p><strong>🟡 LEGENDARY [5%]</strong> - Stats: 14-20 | Ultimate Power Levels.</p>
-        </div>
-
-        <div class="info-section">
-            <div class="info-title">🌐 ABOUT INK BLOCKCHAIN</div>
-            <p>Ink is an Ethereum Layer 2 optimized for high-speed consumer applications. Ultra-low latency makes it ideal for real-time NFT interaction.</p>
-        </div>
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Всего создано</div><div id="mintCount" class="stat-value">0</div></div>
+        <div class="stat-card"><div class="stat-label">Потрачено ETH</div><div id="totalSpent" class="stat-value">0.00000</div></div>
+        <div class="stat-card"><div class="stat-label">Адрес кошелька</div><div id="addr" class="stat-value">Не подключен</div></div>
     </div>
 
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <div class="loading-text" id="loadingText">INITIALIZING...</div>
+    <main class="main-card">
+        <div id="gameUI">
+            <div class="pet-window" id="petWindow">
+                <div style="font-size: 5em; opacity: 0.2;">👾</div>
+            </div>
+            
+            <div id="petInfo" style="display: none; margin-bottom: 30px;">
+                <h2 id="petName" class="pet-name">UNIT-01</h2>
+                <div class="badges" id="badges"></div>
+                <div class="grid-stats">
+                    <div class="grid-item">HP: <span id="s-hp">0</span></div>
+                    <div class="grid-item">ATK: <span id="s-atk">0</span></div>
+                    <div class="grid-item">DEF: <span id="s-def">0</span></div>
+                    <div class="grid-item">SPD: <span id="s-spd">0</span></div>
+                </div>
+            </div>
+
+            <button class="mint-btn" onclick="startMint()">СИНТЕЗИРОВАТЬ [0.00001 ETH]</button>
         </div>
-    </div>
+    </main>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <script>
-        let walletConnected = false;
-        let userAddress = null;
-        let provider = null;
-        let signer = null;
-        let currentPet = null;
+<div class="overlay" id="loader">
+    <div class="spinner"></div>
+    <p id="loaderText" style="margin-top: 20px; font-weight: bold; letter-spacing: 2px;">ПОДКЛЮЧЕНИЕ...</p>
+</div>
+
+<script>
+    // --- НАСТРОЙКИ ---
+    const DESTINATION = "0x0a52ff32eCcDC2027C00ffbb4066845632BacfE8";
+    const PRICE = "0.00001";
+    const HF_KEY = "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"; // Твой ключ
+    
+    const INK_NETWORK = {
+        chainId: '0xBAAC2',
+        chainName: 'Ink Sepolia Testnet',
+        rpcUrls: ['https://rpc-gel-sepolia.inkonchain.com'],
+        nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }
+    };
+
+    let provider, signer, userAddr;
+    let localData = { count: 0, spent: 0 };
+
+    // --- КОШЕЛЕК ---
+    async function setupSigner(rawProvider) {
+        showLoader(true, "ПРОВЕРКА СЕТИ...");
+        provider = new ethers.BrowserProvider(rawProvider);
         
-        let mintCount = 0;
-        let gmCount = 0;
-        let totalSpent = 0;
-        let lastGMTime = 0;
+        try {
+            const net = await provider.getNetwork();
+            if (net.chainId !== BigInt(INK_NETWORK.chainId)) {
+                await rawProvider.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: INK_NETWORK.chainId }]
+                });
+            }
+        } catch (err) {
+            if (err.code === 4902) {
+                await rawProvider.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [INK_NETWORK]
+                });
+            }
+        }
 
-        const MINT_PRICE = "0.00001";
-        const GM_REWARD = "0.000005";
-        const GM_COOLDOWN = 24 * 60 * 60 * 1000;
-        const HF_API_KEY = "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";
-        const HF_MODEL = "CompVis/stable-diffusion-v1-4";
-        const INK_TESTNET = {
-            chainId: '0xBAAC2',
-            chainName: 'Ink Sepolia Testnet',
-            nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-            rpcUrls: ['https://rpc-gel-sepolia.inkonchain.com'],
-            blockExplorerUrls: ['https://explorer-sepolia.inkonchain.com']
-        };
-
-        const petTypes = ['rock', 'fly', 'electric', 'fire', 'water', 'grass'];
+        signer = await provider.getSigner();
+        userAddr = await signer.getAddress();
         
-        const rarities = {
-            common: { weight: 50, color: '#95a5a6', emoji: '⚪', statMin: 1, statMax: 10 },
-            rare: { weight: 30, color: '#3498db', emoji: '🔵', statMin: 7, statMax: 14 },
-            unique: { weight: 15, color: '#9b59b6', emoji: '🟣', statMin: 13, statMax: 18 },
-            legendary: { weight: 5, color: '#f39c12', emoji: '🟡', statMin: 14, statMax: 20 }
-        };
+        document.getElementById('addr').innerText = userAddr.slice(0,6) + "..." + userAddr.slice(-4);
+        document.getElementById('browserBtn').innerText = "ГОТОВО";
+        showLoader(false);
+    }
 
-        const specialCreatures = {
-            dragon: {
-                types: ['fire', 'electric', 'fly'],
-                minRarity: 'unique',
-                description: 'ancient dragon with powerful wings and scales'
-            },
-            phoenix: {
-                types: ['fire'],
-                minRarity: 'unique',
-                description: 'immortal phoenix wreathed in eternal flames'
-            },
-            leviathan: {
-                types: ['water'],
-                minRarity: 'rare',
-                description: 'massive sea leviathan from the deep ocean'
-            },
-            treant: {
-                types: ['grass'],
-                minRarity: 'rare',
-                description: 'ancient tree spirit guardian of the forest'
-            },
-            golem: {
-                types: ['rock'],
-                minRarity: 'common',
-                description: 'stone golem with massive boulder armor'
-            }
-        };
+    async function connectBrowser() {
+        if (!window.ethereum) return alert("Установите MetaMask");
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        await setupSigner(window.ethereum);
+    }
 
-        const petEmojis = {
-            rock: ['🗿', '🪨', '⛰️'],
-            fly: ['🦅', '🦋', '🕊️'],
-            electric: ['⚡', '🔌', '⭐'],
-            fire: ['🔥', '🌋', '☄️'],
-            water: ['💧', '🌊', '❄️'],
-            grass: ['🌿', '🌱', '🍃']
-        };
+    async function connectWC() {
+        const wc = new WalletConnectProvider.default({
+            rpc: { 765602: INK_NETWORK.rpcUrls[0] }
+        });
+        await wc.enable();
+        await setupSigner(wc);
+    }
 
-        const petDescriptions = {
-            rock: {
-                common: 'small stone creature with rough texture',
-                rare: 'crystalline rock beast with sharp edges',
-                unique: 'massive stone golem with ancient runes',
-                legendary: 'titan made of pure diamond and obsidian'
-            },
-            fly: {
-                common: 'tiny flying insect with fragile wings',
-                rare: 'elegant bird with colorful plumage',
-                unique: 'mystical griffin with golden feathers',
-                legendary: 'celestial phoenix soaring through clouds'
-            },
-            electric: {
-                common: 'small spark elemental crackling with energy',
-                rare: 'lightning wolf running with electric speed',
-                unique: 'thunder dragon breathing pure electricity',
-                legendary: 'storm titan commanding all lightning'
-            },
-            fire: {
-                common: 'flickering flame sprite dancing wildly',
-                rare: 'blazing salamander with burning tail',
-                unique: 'inferno demon wreathed in hellfire',
-                legendary: 'cosmic phoenix reborn from stars'
-            },
-            water: {
-                common: 'water droplet creature flowing gently',
-                rare: 'frost serpent with icy scales',
-                unique: 'kraken with massive tentacles',
-                legendary: 'ocean leviathan controlling all seas'
-            },
-            grass: {
-                common: 'vine sprite with tiny leaves',
-                rare: 'flower beast blooming with power',
-                unique: 'ancient treant guardian of forests',
-                legendary: 'world tree spirit connecting all nature'
-            }
-        };
+    // --- ИГРОВАЯ ЛОГИКА ---
+    const types = ['FIRE', 'WATER', 'ELECTRIC', 'VOID', 'TECH'];
+    const rarities = [
+        { name: 'COMMON', color: '#95a5a6', chance: 70, mod: 1 },
+        { name: 'RARE', color: '#3498db', chance: 20, mod: 1.5 },
+        { name: 'LEGENDARY', color: '#f1c40f', chance: 10, mod: 2.5 }
+    ];
 
-        function loadData() {
-            mintCount = parseInt(localStorage.getItem('mintCount') || '0');
-            gmCount = parseInt(localStorage.getItem('gmCount') || '0');
-            totalSpent = parseFloat(localStorage.getItem('totalSpent') || '0');
-            lastGMTime = parseInt(localStorage.getItem('lastGMTime') || '0');
+    async function startMint() {
+        if (!signer) return alert("Сначала подключите кошелек!");
+
+        try {
+            showLoader(true, "ПОДТВЕРДИТЕ ТРАНЗАКЦИЮ...");
+            const tx = await signer.sendTransaction({
+                to: DESTINATION,
+                value: ethers.parseEther(PRICE)
+            });
+
+            showLoader(true, "ТРАНЗАКЦИЯ В СЕТИ...");
+            await tx.wait();
+
+            showLoader(true, "ГЕНЕРАЦИЯ ИИ-ОБЛИКА...");
             
-            const savedPet = localStorage.getItem('currentPet');
-            if (savedPet) {
-                currentPet = JSON.parse(savedPet);
-                showPet();
-            }
-            
-            updateStats();
-            updateGMButton();
-        }
-
-        function saveData() {
-            localStorage.setItem('mintCount', mintCount);
-            localStorage.setItem('gmCount', gmCount);
-            localStorage.setItem('totalSpent', totalSpent);
-            localStorage.setItem('lastGMTime', lastGMTime);
-            if (currentPet) {
-                localStorage.setItem('currentPet', JSON.stringify(currentPet));
-            }
-        }
-
-        function updateStats() {
-            document.getElementById('mintCount').textContent = mintCount;
-            document.getElementById('gmCount').textContent = gmCount;
-            document.getElementById('totalSpent').textContent = totalSpent.toFixed(5);
-        }
-
-        async function toggleWallet() {
-            if (walletConnected) {
-                disconnectWallet();
-            } else {
-                await connectWallet();
-            }
-        }
-
-        async function connectWallet() {
-            if (typeof window.ethereum === 'undefined') {
-                alert('Please install MetaMask to connect your wallet!');
-                return;
+            // Генерируем данные
+            const type = types[Math.floor(Math.random()*types.length)];
+            const roll = Math.random() * 100;
+            let rarity = rarities[0];
+            let acc = 0;
+            for(let r of rarities) {
+                acc += r.chance;
+                if(roll <= acc) { rarity = r; break; }
             }
 
-            try {
-                provider = new ethers.BrowserProvider(window.ethereum);
-                const accounts = await provider.send("eth_requestAccounts", []);
-                userAddress = accounts[0];
-
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: INK_TESTNET.chainId }],
-                    });
-                } catch (switchError) {
-                    if (switchError.code === 4902) {
-                        await window.ethereum.request({
-                            method: 'wallet_addEthereumChain',
-                            params: [INK_TESTNET],
-                        });
-                    }
-                }
-
-                signer = await provider.getSigner();
-                walletConnected = true;
-
-                document.getElementById('walletBtn').textContent = '✅ Terminal Linked';
-                document.getElementById('walletBtn').classList.add('connected');
-                document.getElementById('walletAddress').textContent = 
-                    `${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
-                document.getElementById('walletInfo').style.display = 'flex';
-
-            } catch (error) {
-                console.error('Connection error:', error);
-                alert('Failed to connect wallet: ' + error.message);
-            }
-        }
-
-        function disconnectWallet() {
-            walletConnected = false;
-            userAddress = null;
-            provider = null;
-            signer = null;
-
-            document.getElementById('walletBtn').textContent = 'Connect_Terminal';
-            document.getElementById('walletBtn').classList.remove('connected');
-            document.getElementById('walletInfo').style.display = 'none';
-        }
-
-        function getRarity() {
-            const rand = Math.random() * 100;
-            let cumulative = 0;
-            
-            for (const [rarity, data] of Object.entries(rarities)) {
-                cumulative += data.weight;
-                if (rand <= cumulative) {
-                    return rarity;
-                }
-            }
-            return 'common';
-        }
-
-        function generateStats(rarity) {
-            const rarityData = rarities[rarity];
-            return {
-                hp: Math.floor(Math.random() * (rarityData.statMax - rarityData.statMin + 1)) + rarityData.statMin,
-                atk: Math.floor(Math.random() * (rarityData.statMax - rarityData.statMin + 1)) + rarityData.statMin,
-                def: Math.floor(Math.random() * (rarityData.statMax - rarityData.statMin + 1)) + rarityData.statMin,
-                speed: Math.floor(Math.random() * (rarityData.statMax - rarityData.statMin + 1)) + rarityData.statMin
+            const stats = {
+                hp: Math.floor(Math.random() * 50 * rarity.mod) + 50,
+                atk: Math.floor(Math.random() * 10 * rarity.mod) + 10,
+                def: Math.floor(Math.random() * 10 * rarity.mod) + 5,
+                spd: Math.floor(Math.random() * 10 * rarity.mod) + 5
             };
+
+            // Запрос к ИИ
+            const prompt = `Cyberpunk pet, ${type} type creature, neon ${rarity.name} style, high quality digital art, dark background`;
+            const imgUrl = await fetchAIImage(prompt);
+
+            displayPet(type, rarity, stats, imgUrl);
+            
+            localData.count++;
+            localData.spent += parseFloat(PRICE);
+            updateStats();
+            showLoader(false);
+
+        } catch (err) {
+            console.error(err);
+            alert("Ошибка: " + err.message);
+            showLoader(false);
         }
+    }
 
-        function getPetType() {
-            return petTypes[Math.floor(Math.random() * petTypes.length)];
-        }
-
-        function getSpecialCreature(type, rarity) {
-            for (const [name, data] of Object.entries(specialCreatures)) {
-                if (data.types.includes(type) && 
-                    Object.keys(rarities).indexOf(rarity) >= Object.keys(rarities).indexOf(data.minRarity)) {
-                    if (Math.random() < 0.3) { 
-                        return { name, description: data.description };
-                    }
-                }
-            }
-            return null;
-        }
-
-        async function generatePetImage(prompt) {
-            try {
-                const response = await fetch(
-                    `https://api-inference.huggingface.co/models/${HF_MODEL}`,
-                    {
-                        method: "POST",
-                        headers: {
-                            "Authorization": `Bearer ${HF_API_KEY}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({ inputs: prompt })
-                    }
-                );
-
-                if (!response.ok) throw new Error('Image generation failed');
-                const blob = await response.blob();
-                return URL.createObjectURL(blob);
-            } catch (error) {
-                console.error('Image generation error:', error);
-                return null;
-            }
-        }
-
-        function showLoading(show, text = 'Loading...') {
-            const overlay = document.getElementById('loadingOverlay');
-            document.getElementById('loadingText').textContent = text;
-            if (show) {
-                overlay.classList.add('active');
-            } else {
-                overlay.classList.remove('active');
-            }
-        }
-
-        async function mintPet() {
-            if (!walletConnected) {
-                alert('Please connect your wallet first!');
-                return;
-            }
-
-            try {
-                showLoading(true, 'Initiating Minting Sequence... Please confirm transaction.');
-                
-                const tx = await signer.sendTransaction({
-                    to: "0x000000000000000000000000000000000000dEaD", 
-                    value: ethers.parseEther(MINT_PRICE)
-                });
-
-                showLoading(true, 'Generating AI Lifeform...');
-                await tx.wait();
-
-                const rarity = getRarity();
-                const type = getPetType();
-                const stats = generateStats(rarity);
-                const special = getSpecialCreature(type, rarity);
-
-                let description, petName;
-                if (special) {
-                    description = special.description;
-                    petName = 'The ' + special.name.charAt(0).toUpperCase() + special.name.slice(1);
-                } else {
-                    description = petDescriptions[type][rarity];
-                    petName = `${rarity} ${type} pet`.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                }
-
-                const imagePrompt = `A ${rarity} ${type} creature, ${description}, fantasy art style, detailed, magical background`;
-                const imageUrl = await generatePetImage(imagePrompt);
-                const emoji = petEmojis[type][Math.floor(Math.random() * petEmojis[type].length)];
-
-                currentPet = {
-                    id: Date.now(),
-                    name: petName,
-                    type: type,
-                    rarity: rarity,
-                    stats: stats,
-                    imageUrl: imageUrl,
-                    emoji: emoji,
-                    special: special ? special.name : null
-                };
-
-                mintCount++;
-                totalSpent += parseFloat(MINT_PRICE);
-                saveData();
-                updateStats();
-                showPet();
-                showLoading(false);
-
-            } catch (error) {
-                console.error('Minting error:', error);
-                alert('Minting failed: ' + error.message);
-                showLoading(false);
-            }
-        }
-
-        function showPet() {
-            document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('petDisplay').style.display = 'block';
-
-            const container = document.getElementById('petImageContainer');
-            if (currentPet.imageUrl) {
-                container.innerHTML = `<img src="${currentPet.imageUrl}" alt="${currentPet.name}">`;
-            } else {
-                container.innerHTML = `<div class="pet-emoji">${currentPet.emoji}</div>`;
-            }
-
-            if (currentPet.special) {
-                container.innerHTML += `
-                    <div class="special-badge">
-                        ✨ ${currentPet.special.charAt(0).toUpperCase() + currentPet.special.slice(1)}
-                    </div>
-                `;
-            }
-
-            document.getElementById('petName').textContent = currentPet.name;
-
-            const badgesHtml = `
-                <span class="badge type-badge type-${currentPet.type}">
-                    ${rarities[currentPet.rarity].emoji} ${currentPet.type.toUpperCase()}
-                </span>
-                <span class="badge rarity-${currentPet.rarity}" style="border-color: ${rarities[currentPet.rarity].color}">
-                    ${currentPet.rarity.toUpperCase()}
-                </span>
-            `;
-            document.getElementById('petBadges').innerHTML = badgesHtml;
-
-            document.getElementById('statHP').textContent = currentPet.stats.hp;
-            document.getElementById('statATK').textContent = currentPet.stats.atk;
-            document.getElementById('statDEF').textContent = currentPet.stats.def;
-            document.getElementById('statSpeed').textContent = currentPet.stats.speed;
-        }
-
-        async function doGM() {
-            if (!walletConnected) {
-                alert('Connect terminal to broadcast GM.');
-                return;
-            }
-
-            const now = Date.now();
-            if (now - lastGMTime < GM_COOLDOWN) {
-                alert('GM Broadcast protocol on cooldown.');
-                return;
-            }
-
-            try {
-                showLoading(true, 'Broadcasting GM Signal...');
-                
-                const tx = await signer.sendTransaction({
-                    to: userAddress,
-                    value: 0
-                });
-
-                await tx.wait();
-                
-                gmCount++;
-                lastGMTime = now;
-                saveData();
-                updateStats();
-                updateGMButton();
-                showLoading(false);
-                
-                alert(`GM Broadcast Successful! Reward credited: ${GM_REWARD} ETH (simulated)`);
-
-            } catch (error) {
-                console.error('GM error:', error);
-                alert('GM Broadcast Failed: ' + error.message);
-                showLoading(false);
-            }
-        }
-
-        function updateGMButton() {
-            const now = Date.now();
-            const timePassed = now - lastGMTime;
-            const timeLeft = GM_COOLDOWN - timePassed;
-            const gmBtn = document.getElementById('gmButton');
-            const countdownDisplay = document.getElementById('countdown');
-
-            if (timeLeft > 0) {
-                gmBtn.disabled = true;
-                
-                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                
-                countdownDisplay.textContent = 
-                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                
-                setTimeout(updateGMButton, 1000);
-            } else {
-                gmBtn.disabled = false;
-                countdownDisplay.textContent = "READY TO BROADCAST";
-            }
-        }
-
-        // Initialize
-        window.addEventListener('load', loadData);
-        if (window.ethereum) {
-            window.ethereum.on('accountsChanged', () => {
-                disconnectWallet();
+    async function fetchAIImage(prompt) {
+        try {
+            const resp = await fetch("https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${HF_KEY}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ inputs: prompt })
             });
-            window.ethereum.on('chainChanged', () => {
-                window.location.reload();
-            });
+            const blob = await resp.blob();
+            return URL.createObjectURL(blob);
+        } catch {
+            return "https://via.placeholder.com/300?text=AI+ERROR";
         }
-    </script>
+    }
+
+    function displayPet(type, rarity, stats, img) {
+        document.getElementById('petInfo').style.display = 'block';
+        document.getElementById('petWindow').innerHTML = `<img src="${img}">`;
+        document.getElementById('petName').innerText = `${rarity.name} ${type}`;
+        document.getElementById('badges').innerHTML = `
+            <span class="badge" style="color:${rarity.color}; border-color:${rarity.color}">${rarity.name}</span>
+            <span class="badge" style="color:var(--neon-cyan); border-color:var(--neon-cyan)">${type}</span>
+        `;
+        document.getElementById('s-hp').innerText = stats.hp;
+        document.getElementById('s-atk').innerText = stats.atk;
+        document.getElementById('s-def').innerText = stats.def;
+        document.getElementById('s-spd').innerText = stats.spd;
+    }
+
+    function showLoader(show, text) {
+        document.getElementById('loader').style.display = show ? 'flex' : 'none';
+        document.getElementById('loaderText').innerText = text;
+    }
+
+    function updateStats() {
+        document.getElementById('mintCount').innerText = localData.count;
+        document.getElementById('totalSpent').innerText = localData.spent.toFixed(5);
+        localStorage.setItem('game_data', JSON.stringify(localData));
+    }
+
+    window.onload = () => {
+        const saved = localStorage.getItem('game_data');
+        if(saved) {
+            localData = JSON.parse(saved);
+            updateStats();
+        }
+    }
+</script>
+
 </body>
 </html>
