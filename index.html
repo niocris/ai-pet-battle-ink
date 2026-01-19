@@ -64,7 +64,9 @@
             </div>
             <div class="title">AI PET ARENA</div>
         </div>
-        <div id="walletActions"><button class="btn" onclick="connect()">CONNECT WALLET</button></div>
+        <div id="walletActions">
+            <button id="connectBtn" class="btn" onclick="connect()">CONNECT WALLET</button>
+        </div>
     </header>
 
     <div class="stats-grid">
@@ -88,6 +90,7 @@
                 <div class="stat-item">SPD: <span id="s-spd">-</span></div>
             </div>
             <button id="mintBtn" class="btn" style="width: 100%; margin-top: 25px; background: linear-gradient(90deg, var(--neon-pink), #7c3aed); color: white; border: none;" onclick="mint()">MINT NEW UNIT (0.00001 ETH)</button>
+            <div id="mintStatus" style="margin-top: 10px; font-size: 0.8em; opacity: 0.7; min-height: 20px;"></div>
         </div>
 
         <div class="collection-card">
@@ -127,13 +130,119 @@
     };
     const types = ['FIRE', 'WATER', 'ELECTRIC', 'GRASS', 'ROCK', 'FLY'];
 
+    async function switchToInkNetwork() {
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: INK_NETWORK.chainId }],
+            });
+        } catch (switchError) {
+            // This error code indicates that the chain has not been added to MetaMask
+            if (switchError.code === 4902) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [INK_NETWORK],
+                    });
+                } catch (addError) {
+                    throw new Error('Failed to add Ink Network to MetaMask');
+                }
+            } else {
+                throw switchError;
+            }
+        }
+    }
+
     async function connect() {
-        if(!window.ethereum) return alert("Install MetaMask");
-        const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        provider = new ethers.BrowserProvider(window.ethereum);
-        signer = await provider.getSigner();
-        user = accs[0];
-        document.getElementById('walletActions').innerHTML = `<span>${user.slice(0,6)}...${user.slice(-4)}</span>`;
+        if(!window.ethereum) {
+            alert("Please install MetaMask to connect your wallet!");
+            return;
+        }
+        
+        try {
+            // Request account access
+            const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            if (!accs || accs.length === 0) {
+                alert("No accounts found. Please unlock MetaMask.");
+                return;
+            }
+            
+            // Switch to Ink Network
+            await switchToInkNetwork();
+            
+            // Wait a bit for network switch
+            await new Promise(r => setTimeout(r, 1000));
+            
+            // Initialize provider and signer
+            provider = new ethers.BrowserProvider(window.ethereum);
+            signer = await provider.getSigner();
+            user = accs[0];
+            
+            // Update UI
+            updateWalletUI();
+            
+            // Listen for account changes
+            window.ethereum.on('accountsChanged', handleAccountsChanged);
+            window.ethereum.on('chainChanged', handleChainChanged);
+            
+        } catch(e) {
+            console.error('Connect error:', e);
+            alert("Error connecting wallet: " + (e.message || e.toString()));
+        }
+    }
+
+    function handleAccountsChanged(accounts) {
+        if (accounts.length === 0) {
+            disconnect();
+        } else {
+            user = accounts[0];
+            if (provider) {
+                provider.getSigner().then(s => {
+                    signer = s;
+                    updateWalletUI();
+                });
+            }
+        }
+    }
+
+    function handleChainChanged(chainId) {
+        // Reload page when chain changes
+        window.location.reload();
+    }
+
+    function disconnect() {
+        provider = null;
+        signer = null;
+        user = null;
+        updateWalletUI();
+        
+        // Remove event listeners
+        if (window.ethereum) {
+            window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+            window.ethereum.removeListener('chainChanged', handleChainChanged);
+        }
+    }
+
+    function updateWalletUI() {
+        const walletActions = document.getElementById('walletActions');
+        const mintStatus = document.getElementById('mintStatus');
+        
+        if (user && signer) {
+            walletActions.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="color: var(--neon-cyan); font-weight: bold;">${user.slice(0,6)}...${user.slice(-4)}</span>
+                    <button class="btn" onclick="disconnect()" style="padding: 8px 15px; font-size: 0.9em;">DISCONNECT</button>
+                </div>
+            `;
+            if (mintStatus) {
+                mintStatus.innerHTML = '<span style="color: var(--neon-cyan);">✓ Wallet Connected</span>';
+            }
+        } else {
+            walletActions.innerHTML = `<button id="connectBtn" class="btn" onclick="connect()">CONNECT WALLET</button>`;
+            if (mintStatus) {
+                mintStatus.innerHTML = '<span style="color: #ff6b6b;">⚠ Connect wallet to mint</span>';
+            }
+        }
     }
 
     async function ensureInkNetwork() {
@@ -149,11 +258,30 @@
     }
 
     async function mint() {
-        if(!signer) return alert("Connect Wallet!");
+        console.log('Mint button clicked');
+        
+        // Check if wallet is connected
+        if(!window.ethereum) {
+            alert("Please install MetaMask first!");
+            return;
+        }
+        
+        if(!signer || !user) {
+            alert("Please connect your wallet first!");
+            await connect();
+            if(!signer) return; // Still not connected after trying
+        }
         
         // Ensure we're on Ink Network
-        if (!await ensureInkNetwork()) {
-            return alert("Please switch to Ink Network");
+        try {
+            if (!await ensureInkNetwork()) {
+                alert("Please switch to Ink Network");
+                return;
+            }
+        } catch(e) {
+            console.error('Network check error:', e);
+            alert("Error checking network: " + e.message);
+            return;
         }
         
         const btn = document.getElementById('mintBtn');
@@ -213,7 +341,17 @@
             console.error('Mint error:', e);
             loader.textContent = 'ERROR!';
             setTimeout(() => { loader.style.display = 'none'; }, 2000);
-            alert("Error: " + (e.message || e.toString())); 
+            
+            let errorMsg = e.message || e.toString();
+            if (errorMsg.includes('user rejected') || errorMsg.includes('User denied')) {
+                errorMsg = "Transaction was cancelled by user";
+            } else if (errorMsg.includes('insufficient funds')) {
+                errorMsg = "Insufficient funds for transaction";
+            } else if (errorMsg.includes('network')) {
+                errorMsg = "Network error. Please check your connection and try again.";
+            }
+            
+            alert("Error: " + errorMsg);
         } finally {
             btn.disabled = false;
         }
@@ -355,8 +493,30 @@
     }
 
     async function checkin() {
-        if(!signer) return alert("Connect Wallet first!");
+        if(!window.ethereum) {
+            alert("Please install MetaMask first!");
+            return;
+        }
+        
+        if(!signer || !user) {
+            alert("Please connect your wallet first!");
+            await connect();
+            if(!signer) return;
+        }
+        
         if(Date.now() - stats.last < 86400000) return alert("24h Cooldown active");
+        
+        // Ensure we're on Ink Network
+        try {
+            if (!await ensureInkNetwork()) {
+                alert("Please switch to Ink Network");
+                return;
+            }
+        } catch(e) {
+            console.error('Network check error:', e);
+            alert("Error checking network: " + e.message);
+            return;
+        }
         
         const btn = document.getElementById('ciBtn');
         btn.disabled = true;
@@ -379,7 +539,17 @@
             alert("Daily check-in successful! Transaction: " + tx.hash);
         } catch(e) {
             console.error('Check-in error:', e);
-            alert("Check-in failed: " + (e.message || e.toString()));
+            
+            let errorMsg = e.message || e.toString();
+            if (errorMsg.includes('user rejected') || errorMsg.includes('User denied')) {
+                errorMsg = "Transaction was cancelled by user";
+            } else if (errorMsg.includes('insufficient funds')) {
+                errorMsg = "Insufficient funds for transaction";
+            } else if (errorMsg.includes('network')) {
+                errorMsg = "Network error. Please check your connection and try again.";
+            }
+            
+            alert("Check-in failed: " + errorMsg);
         } finally {
             btn.disabled = false;
         }
@@ -413,18 +583,34 @@
     function view(i) { show(pets[i]); window.scrollTo({top:0, behavior:'smooth'}); }
     function save() { localStorage.setItem('horde_stats', JSON.stringify(stats)); localStorage.setItem('horde_pets', JSON.stringify(pets)); }
     
-    // Check network on load
+    // Check if already connected on load
     window.onload = async function() {
         updateUI();
+        updateWalletUI();
+        
         if (window.ethereum) {
             try {
+                // Check if already connected
+                const accs = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accs && accs.length > 0) {
+                    user = accs[0];
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    signer = await provider.getSigner();
+                    updateWalletUI();
+                    
+                    // Listen for account changes
+                    window.ethereum.on('accountsChanged', handleAccountsChanged);
+                    window.ethereum.on('chainChanged', handleChainChanged);
+                }
+                
+                // Check network
                 const chainId = await window.ethereum.request({ method: 'eth_chainId' });
                 const currentChainId = parseInt(chainId, 16);
                 if (currentChainId !== INK_CHAIN_ID && user) {
-                    console.log('Not on Ink Network. Please switch when connecting wallet.');
+                    console.log('Not on Ink Network. Will switch when needed.');
                 }
             } catch(e) {
-                console.log('Could not check network:', e);
+                console.log('Could not check wallet status:', e);
             }
         }
     };
