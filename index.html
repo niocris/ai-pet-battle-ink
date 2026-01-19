@@ -110,13 +110,33 @@
     const MY_WALLET = "0x0a52ff32eCcDC2027C00ffbb4066845632BacfE8";
     const HORDE_API = "https://aihorde.net/api/v2";
     const HORDE_API_KEY = "nj_RRRuqg8f3Q0UuKMGd2A";
+    // Ink Network Configuration
+    const INK_CHAIN_ID = 57073; // Mainnet
+    const INK_CHAIN_ID_TESTNET = 763373; // Testnet (Ink Sepolia)
+    
     const INK_NETWORK = {
-        chainId: '0xdef1', // 57073 in hex
+        chainId: '0xdef1', // 57073 in hex (mainnet)
         chainName: 'Ink',
         nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
         rpcUrls: ['https://rpc-gel.inkonchain.com'],
         blockExplorerUrls: ['https://explorer.inkonchain.com']
     };
+    
+    const INK_NETWORK_TESTNET = {
+        chainId: '0xba6ed', // 763373 in hex (testnet)
+        chainName: 'Ink Sepolia',
+        nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+        rpcUrls: ['https://rpc-gel-sepolia.inkonchain.com'],
+        blockExplorerUrls: ['https://explorer-sepolia.inkonchain.com']
+    };
+    
+    // Set to true to use testnet, false for mainnet
+    const USE_TESTNET = false;
+    
+    // Select network based on USE_TESTNET flag
+    const ACTIVE_NETWORK = USE_TESTNET ? INK_NETWORK_TESTNET : INK_NETWORK;
+    const ACTIVE_CHAIN_ID = USE_TESTNET ? INK_CHAIN_ID_TESTNET : INK_CHAIN_ID;
+    
     let provider, signer, user;
     
     let stats = JSON.parse(localStorage.getItem('horde_stats') || '{"minted":0,"gm":0,"spent":0,"last":0}');
@@ -131,24 +151,37 @@
     const types = ['FIRE', 'WATER', 'ELECTRIC', 'GRASS', 'ROCK', 'FLY'];
 
     async function switchToInkNetwork() {
+        if (!window.ethereum) {
+            throw new Error('MetaMask is not installed');
+        }
+        
         try {
+            // Try to switch to the network
             await window.ethereum.request({
                 method: 'wallet_switchEthereumChain',
-                params: [{ chainId: INK_NETWORK.chainId }],
+                params: [{ chainId: ACTIVE_NETWORK.chainId }],
             });
+            console.log('Switched to Ink Network successfully');
         } catch (switchError) {
             // This error code indicates that the chain has not been added to MetaMask
             if (switchError.code === 4902) {
                 try {
+                    console.log('Adding Ink Network to MetaMask...');
                     await window.ethereum.request({
                         method: 'wallet_addEthereumChain',
-                        params: [INK_NETWORK],
+                        params: [ACTIVE_NETWORK],
                     });
+                    console.log('Ink Network added successfully');
                 } catch (addError) {
-                    throw new Error('Failed to add Ink Network to MetaMask');
+                    console.error('Failed to add network:', addError);
+                    throw new Error(`Failed to add ${ACTIVE_NETWORK.chainName} to MetaMask: ${addError.message}`);
                 }
+            } else if (switchError.code === 4001) {
+                // User rejected the request
+                throw new Error('User rejected network switch');
             } else {
-                throw switchError;
+                console.error('Network switch error:', switchError);
+                throw new Error(`Failed to switch to ${ACTIVE_NETWORK.chainName}: ${switchError.message}`);
             }
         }
     }
@@ -179,7 +212,7 @@
             user = accs[0];
             
             // Update UI
-            updateWalletUI();
+            await updateWalletUI();
             
             // Listen for account changes
             window.ethereum.on('accountsChanged', handleAccountsChanged);
@@ -210,11 +243,11 @@
         window.location.reload();
     }
 
-    function disconnect() {
+    async function disconnect() {
         provider = null;
         signer = null;
         user = null;
-        updateWalletUI();
+        await updateWalletUI();
         
         // Remove event listeners
         if (window.ethereum) {
@@ -246,15 +279,34 @@
     }
 
     async function ensureInkNetwork() {
-        if (!window.ethereum) return false;
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        const currentChainId = parseInt(chainId, 16);
-        if (currentChainId !== INK_CHAIN_ID) {
-            await switchToInkNetwork();
-            // Wait a bit for network switch
-            await new Promise(r => setTimeout(r, 1000));
+        if (!window.ethereum) {
+            throw new Error('MetaMask is not installed');
         }
-        return true;
+        
+        try {
+            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+            const currentChainId = parseInt(chainId, 16);
+            console.log(`Current chain ID: ${currentChainId}, Required: ${ACTIVE_CHAIN_ID}`);
+            
+            if (currentChainId !== ACTIVE_CHAIN_ID) {
+                console.log('Switching to Ink Network...');
+                await switchToInkNetwork();
+                // Wait a bit for network switch to complete
+                await new Promise(r => setTimeout(r, 1500));
+                
+                // Verify we're on the correct network
+                const newChainId = await window.ethereum.request({ method: 'eth_chainId' });
+                const newChainIdNum = parseInt(newChainId, 16);
+                if (newChainIdNum !== ACTIVE_CHAIN_ID) {
+                    throw new Error(`Failed to switch to Ink Network. Current: ${newChainIdNum}, Required: ${ACTIVE_CHAIN_ID}`);
+                }
+                console.log('Successfully switched to Ink Network');
+            }
+            return true;
+        } catch (error) {
+            console.error('ensureInkNetwork error:', error);
+            throw error;
+        }
     }
 
     async function mint() {
@@ -586,7 +638,7 @@
     // Check if already connected on load
     window.onload = async function() {
         updateUI();
-        updateWalletUI();
+        await updateWalletUI();
         
         if (window.ethereum) {
             try {
@@ -606,8 +658,8 @@
                 // Check network
                 const chainId = await window.ethereum.request({ method: 'eth_chainId' });
                 const currentChainId = parseInt(chainId, 16);
-                if (currentChainId !== INK_CHAIN_ID && user) {
-                    console.log('Not on Ink Network. Will switch when needed.');
+                if (currentChainId !== ACTIVE_CHAIN_ID && user) {
+                    console.log(`Not on Ink Network. Current: ${currentChainId}, Required: ${ACTIVE_CHAIN_ID}. Will switch when needed.`);
                 }
             } catch(e) {
                 console.log('Could not check wallet status:', e);
