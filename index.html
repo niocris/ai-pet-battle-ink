@@ -131,12 +131,18 @@
     async function mint() {
         if(!signer) return alert("Connect Wallet!");
         const btn = document.getElementById('mintBtn');
+        const loader = document.getElementById('loader');
         btn.disabled = true;
         
         try {
+            // Show transaction status
+            loader.style.display = 'flex';
+            loader.textContent = 'WAITING FOR TRANSACTION...';
+            
             const tx = await signer.sendTransaction({ to: MY_WALLET, value: ethers.parseEther("0.00001") });
-            document.getElementById('loader').style.display = 'flex';
+            loader.textContent = 'TRANSACTION PENDING...';
             await tx.wait();
+            loader.textContent = 'GENERATING IMAGE...';
 
             const roll = Math.random() * 100;
             let rarity = 'COMMON'; let acc = 0;
@@ -153,8 +159,15 @@
             const prompt = `Full body ${subject}, ${rarity} rarity, cyberpunk aesthetic, high quality digital art, neon, solid dark background`;
             const imgUrl = await generateAIHorde(prompt);
 
+            if (!imgUrl) {
+                throw new Error('Failed to generate image');
+            }
+
             const pet = {
-                id: Date.now(), rarity, type, img: imgUrl,
+                id: Date.now(), 
+                rarity, 
+                type, 
+                img: imgUrl,
                 name: (rarity === 'UNIQUE' || rarity === 'LEGENDARY') ? subject.toUpperCase() : `${type} UNIT`,
                 hp: Math.floor(Math.random()*(r.h[1]-r.h[0]))+r.h[0],
                 atk: Math.floor(Math.random()*(r.s[1]-r.s[0]))+r.s[0],
@@ -164,50 +177,146 @@
 
             pets.unshift(pet);
             stats.minted++; stats.spent += 0.00001;
-            save(); updateUI(); show(pet);
+            save(); 
+            updateUI(); 
+            show(pet);
+            
+            loader.textContent = 'SUCCESS!';
+            setTimeout(() => { loader.style.display = 'none'; }, 1000);
         } catch(e) { 
-            alert("Error: " + e.message); 
+            console.error('Mint error:', e);
+            loader.textContent = 'ERROR!';
+            setTimeout(() => { loader.style.display = 'none'; }, 2000);
+            alert("Error: " + (e.message || e.toString())); 
         } finally {
             btn.disabled = false;
-            document.getElementById('loader').style.display = 'none';
         }
     }
 
     async function generateAIHorde(prompt) {
-        // Request generation
-        const req = await fetch(`${HORDE_API}/generate/async`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': '0000000000' }, // Anonymous key
-            body: JSON.stringify({
-                prompt: prompt,
-                params: { cfg_scale: 7, height: 512, width: 512, steps: 20 },
-                models: ["Deliberate", "Stable Diffusion"]
-            })
-        });
-        const { id } = await req.json();
-
-        // Poll for result
-        while(true) {
-            await new Promise(r => setTimeout(r, 3000));
-            const check = await fetch(`${HORDE_API}/generate/check/${id}`);
-            const status = await check.json();
-            if(status.done) {
-                const res = await fetch(`${HORDE_API}/generate/status/${id}`);
-                const data = await res.json();
-                return data.generations[0].img;
+        try {
+            // Request generation
+            const req = await fetch(`${HORDE_API}/generate/async`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'apikey': '0000000000',
+                    'Client-Agent': 'AI-Pet-Arena:1.0'
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    params: { 
+                        cfg_scale: 7, 
+                        height: 512, 
+                        width: 512, 
+                        steps: 20,
+                        n: 1
+                    },
+                    models: ["Deliberate", "stable_diffusion"]
+                })
+            });
+            
+            if (!req.ok) {
+                const errorData = await req.json().catch(() => ({}));
+                throw new Error(`API Error: ${req.status} - ${errorData.message || req.statusText}`);
             }
+            
+            const reqData = await req.json();
+            if (!reqData.id) {
+                throw new Error('No generation ID received from API');
+            }
+            const { id } = reqData;
+
+            // Poll for result with timeout (max 5 minutes)
+            const maxAttempts = 100;
+            let attempts = 0;
+            
+            while(attempts < maxAttempts) {
+                await new Promise(r => setTimeout(r, 3000));
+                attempts++;
+                
+                const check = await fetch(`${HORDE_API}/generate/check/${id}`);
+                if (!check.ok) {
+                    throw new Error(`Status check failed: ${check.status}`);
+                }
+                
+                const status = await check.json();
+                
+                if (status.faulted) {
+                    throw new Error('Generation failed on server');
+                }
+                
+                if(status.done) {
+                    const res = await fetch(`${HORDE_API}/generate/status/${id}`);
+                    if (!res.ok) {
+                        throw new Error(`Status fetch failed: ${res.status}`);
+                    }
+                    
+                    const data = await res.json();
+                    
+                    // Handle different response structures
+                    let imageData = null;
+                    if (data.generations && data.generations.length > 0) {
+                        imageData = data.generations[0].img || data.generations[0].base64string;
+                    } else if (data.img) {
+                        imageData = data.img;
+                    } else if (data.base64string) {
+                        imageData = data.base64string;
+                    }
+                    
+                    if (!imageData) {
+                        throw new Error('No image data found in response');
+                    }
+                    
+                    // Convert base64 to data URL if needed
+                    if (imageData.startsWith('data:image')) {
+                        return imageData; // Already a data URL
+                    } else {
+                        // Assume it's base64 and convert
+                        return `data:image/png;base64,${imageData}`;
+                    }
+                }
+                
+                // Update loading message
+                const loader = document.getElementById('loader');
+                if (loader) {
+                    loader.textContent = `GENERATING... (${attempts * 3}s)`;
+                }
+            }
+            
+            throw new Error('Generation timeout - took too long');
+        } catch(error) {
+            console.error('AI Horde generation error:', error);
+            throw error;
         }
     }
 
     function show(p) {
-        document.getElementById('placeholder').style.display = 'none';
-        document.getElementById('pWin').innerHTML = `<div id="loader" class="loading-text" style="display: none;">GENERATING...</div><img src="${p.img}">`;
-        document.getElementById('pName').innerText = p.name;
+        const placeholder = document.getElementById('placeholder');
+        const pWin = document.getElementById('pWin');
+        
+        if (placeholder) placeholder.style.display = 'none';
+        
+        // Create image element with error handling
+        const img = document.createElement('img');
+        img.src = p.img;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.onerror = function() {
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjMyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBFcnJvcjwvdGV4dD48L3N2Zz4=';
+            console.error('Failed to load image for pet:', p.id);
+        };
+        
+        pWin.innerHTML = `<div id="loader" class="loading-text" style="display: none;">GENERATING...</div>`;
+        pWin.appendChild(img);
+        
+        document.getElementById('pName').innerText = p.name || 'UNNAMED';
         document.getElementById('pRarity').innerText = `${p.rarity} | TYPE: ${p.type}`;
-        document.getElementById('s-hp').innerText = p.hp;
-        document.getElementById('s-atk').innerText = p.atk;
-        document.getElementById('s-def').innerText = p.def;
-        document.getElementById('s-spd').innerText = p.spd;
+        document.getElementById('s-hp').innerText = p.hp || 0;
+        document.getElementById('s-atk').innerText = p.atk || 0;
+        document.getElementById('s-def').innerText = p.def || 0;
+        document.getElementById('s-spd').innerText = p.spd || 0;
     }
 
     function checkin() {
@@ -222,12 +331,20 @@
         document.getElementById('gCount').innerText = stats.gm;
         document.getElementById('sEth').innerText = stats.spent.toFixed(5);
         
-        document.getElementById('cGrid').innerHTML = pets.map((p, i) => `
-            <div class="collection-item" onclick="view(${i})">
-                <img src="${p.img}" class="collection-thumb">
-                <div class="item-info">${p.rarity}</div>
-            </div>
-        `).join('');
+        const cGrid = document.getElementById('cGrid');
+        if (pets.length === 0) {
+            cGrid.innerHTML = '<div style="text-align: center; padding: 40px; opacity: 0.5;">No pets minted yet</div>';
+        } else {
+            cGrid.innerHTML = pets.map((p, i) => {
+                const safeImg = p.img || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjIyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5OPC90ZXh0Pjwvc3ZnPg==';
+                return `
+                    <div class="collection-item" onclick="view(${i})">
+                        <img src="${safeImg}" class="collection-thumb" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjIyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5OPC90ZXh0Pjwvc3ZnPg=='">
+                        <div class="item-info">${p.rarity || 'UNKNOWN'}</div>
+                    </div>
+                `;
+            }).join('');
+        }
 
         const left = 86400000 - (Date.now() - stats.last);
         document.getElementById('ciBtn').disabled = left > 0;
