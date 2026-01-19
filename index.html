@@ -106,6 +106,14 @@
 <script>
     const MY_WALLET = "0x0a52ff32eCcDC2027C00ffbb4066845632BacfE8";
     const HORDE_API = "https://aihorde.net/api/v2";
+    const HORDE_API_KEY = "nj_RRRuqg8f3Q0UuKMGd2A";
+    const INK_NETWORK = {
+        chainId: '0xdef1', // 57073 in hex
+        chainName: 'Ink',
+        nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+        rpcUrls: ['https://rpc-gel.inkonchain.com'],
+        blockExplorerUrls: ['https://explorer.inkonchain.com']
+    };
     let provider, signer, user;
     
     let stats = JSON.parse(localStorage.getItem('horde_stats') || '{"minted":0,"gm":0,"spent":0,"last":0}');
@@ -128,8 +136,26 @@
         document.getElementById('walletActions').innerHTML = `<span>${user.slice(0,6)}...${user.slice(-4)}</span>`;
     }
 
+    async function ensureInkNetwork() {
+        if (!window.ethereum) return false;
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        const currentChainId = parseInt(chainId, 16);
+        if (currentChainId !== INK_CHAIN_ID) {
+            await switchToInkNetwork();
+            // Wait a bit for network switch
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        return true;
+    }
+
     async function mint() {
         if(!signer) return alert("Connect Wallet!");
+        
+        // Ensure we're on Ink Network
+        if (!await ensureInkNetwork()) {
+            return alert("Please switch to Ink Network");
+        }
+        
         const btn = document.getElementById('mintBtn');
         const loader = document.getElementById('loader');
         btn.disabled = true;
@@ -200,7 +226,7 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json', 
-                    'apikey': '0000000000',
+                    'apikey': HORDE_API_KEY,
                     'Client-Agent': 'AI-Pet-Arena:1.0'
                 },
                 body: JSON.stringify({
@@ -253,27 +279,36 @@
                     }
                     
                     const data = await res.json();
+                    console.log('Generation status response:', data);
                     
                     // Handle different response structures
                     let imageData = null;
                     if (data.generations && data.generations.length > 0) {
-                        imageData = data.generations[0].img || data.generations[0].base64string;
+                        const gen = data.generations[0];
+                        imageData = gen.img || gen.base64string || gen.image;
+                        console.log('Found image in generations array, length:', imageData ? imageData.length : 0);
                     } else if (data.img) {
                         imageData = data.img;
+                        console.log('Found image in data.img, length:', imageData.length);
                     } else if (data.base64string) {
                         imageData = data.base64string;
+                        console.log('Found image in data.base64string, length:', imageData.length);
                     }
                     
                     if (!imageData) {
-                        throw new Error('No image data found in response');
+                        console.error('Full response data:', JSON.stringify(data, null, 2));
+                        throw new Error('No image data found in response. Check console for details.');
                     }
                     
                     // Convert base64 to data URL if needed
+                    // AI Horde returns webp format base64
                     if (imageData.startsWith('data:image')) {
+                        console.log('Image already in data URL format');
                         return imageData; // Already a data URL
                     } else {
-                        // Assume it's base64 and convert
-                        return `data:image/png;base64,${imageData}`;
+                        // Assume it's base64 webp and convert
+                        console.log('Converting base64 to webp data URL');
+                        return `data:image/webp;base64,${imageData}`;
                     }
                 }
                 
@@ -319,11 +354,35 @@
         document.getElementById('s-spd').innerText = p.spd || 0;
     }
 
-    function checkin() {
+    async function checkin() {
+        if(!signer) return alert("Connect Wallet first!");
         if(Date.now() - stats.last < 86400000) return alert("24h Cooldown active");
-        stats.gm++; stats.last = Date.now();
-        save(); updateUI();
-        alert("Daily check-in successful!");
+        
+        const btn = document.getElementById('ciBtn');
+        btn.disabled = true;
+        
+        try {
+            // Create transaction on Ink Network
+            const tx = await signer.sendTransaction({ 
+                to: MY_WALLET, 
+                value: ethers.parseEther("0.00001"),
+                data: "0x" // Check-in transaction
+            });
+            
+            await tx.wait();
+            
+            stats.gm++; 
+            stats.last = Date.now();
+            stats.spent += 0.00001;
+            save(); 
+            updateUI();
+            alert("Daily check-in successful! Transaction: " + tx.hash);
+        } catch(e) {
+            console.error('Check-in error:', e);
+            alert("Check-in failed: " + (e.message || e.toString()));
+        } finally {
+            btn.disabled = false;
+        }
     }
 
     function updateUI() {
@@ -353,7 +412,22 @@
 
     function view(i) { show(pets[i]); window.scrollTo({top:0, behavior:'smooth'}); }
     function save() { localStorage.setItem('horde_stats', JSON.stringify(stats)); localStorage.setItem('horde_pets', JSON.stringify(pets)); }
-    window.onload = updateUI;
+    
+    // Check network on load
+    window.onload = async function() {
+        updateUI();
+        if (window.ethereum) {
+            try {
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                const currentChainId = parseInt(chainId, 16);
+                if (currentChainId !== INK_CHAIN_ID && user) {
+                    console.log('Not on Ink Network. Please switch when connecting wallet.');
+                }
+            } catch(e) {
+                console.log('Could not check network:', e);
+            }
+        }
+    };
 </script>
 </body>
 </html>
